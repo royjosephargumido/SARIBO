@@ -13,3 +13,11 @@ The following are the required minimum hardware requirements for SARIBO:
 | ------------- | ------------- |
 | Arduino Nano ATmega328P CH340G  | The micro controller unit (MCU) responsible in the processing, management, control of the overall functionality of the system.  |
 | NodeMCU V3 ESP8266 ESP-12E  | The micro controller unit (MCU) responsible in the establishment, control, management, of the Wi-Fi communication functionality of the system.  |
+| 12V DC Plastic Solenoid Water Valve (Normally Closed) 1/2"| |
+| Plastic Water Flow Sensor 1/2" | |
+| MicroSD Card Reader Module | |
+| 2 4-Channel 5V Low Level Trigger 10A 250 VAC Relay with Optocoupler | |
+| DS3231 RTC Real Time Clock and EEPROM AT24C32 Module | |
+| HC-SR04 Ultrasonic Ranging Sensor | |
+| Soil Moisture Sensor Module | |
+
