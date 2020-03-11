@@ -29,6 +29,5 @@ The following are the software requirements for SARIBO:
 | ------------- | ------------- | ------------- |
 | Arduino IDE | Version 1.8.10 | Serves as the Integrated Development Environment (IDE) of the Arduino wherein codes during the development are written using the software. |
 | Arduino Nano ATmega328P CH340G Device Driver | | Used as the device driver of the Arduino Nano that uses the cheap CH340G IC. |
-| ArduinoJSON Library for Arduino | <ArduinoJson.h>
-Version 6.14.1 by Benoit Blanchon (github.com/bblanchon/ArduinoJson) | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
+| ArduinoJSON Library for Arduino | <ArduinoJson.h> \n Version 6.14.1 by Benoit Blanchon (github.com/bblanchon/ArduinoJson) | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
 
