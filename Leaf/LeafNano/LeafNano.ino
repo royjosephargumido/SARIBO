@@ -4,7 +4,7 @@
 
   Version 1.01.01 Revision March 11, 2020
   BSD 3-Clause License
-  Copyright (c) 2020, Roy Joseph Argumido
+  Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
   All rights reserved.
   
   Redistribution and use in source and binary forms, with or without
