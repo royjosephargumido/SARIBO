@@ -4,10 +4,11 @@ Backyard farming Operations is an internet-of-things (iot) Irrigation System des
 
 SARIBO contains two modules:
 
-1. SARIBO Leaf Module (SARIBO Leaf). The SARIBO Leaf Module which controls the connected sensors and is placed on the field.
-2. SARIBO Root Module (SARIBO Root). The SARIBO Root Module is the main controller module which controls the watering process, activation of relays for the pump and valves, water level among others.
+1. **SARIBO Leaf Module (SARIBO Leaf).** The SARIBO Leaf Module which controls the connected sensors and is placed on the field.
+2. **SARIBO Root Module (SARIBO Root).** The SARIBO Root Module is the main controller module which controls the watering process, activation of relays for the pump and valves, water level among others.
 
-The following are the hardware requirements for SARIBO:
+
+The following are the **hardware requirements for SARIBO**:
 
 | Hardware  | Description |
 | ------------- | ------------- |
@@ -23,7 +24,7 @@ The following are the hardware requirements for SARIBO:
 
 
 
-The following are the software requirements for SARIBO:
+The following are the **software requirements for SARIBO**:
 
 | Software | Specification | Description |
 | ------------- | ------------- | ------------- |
@@ -35,6 +36,5 @@ The following are the software requirements for SARIBO:
 | Real Time Clock (RTC) Library for Arduino | [<RTClib.h> Version 1.3.3 by AdaFruit](https://github.com/adafruit/RTClib) | Provides the functionality for the setting and accessing of date and time. |
 | HCSR04 Ultrasonic Ranging Sensor Library for Arduino | Built using [<HCSR04.h> version 2.0.2 by gamegine](https://github.com/gamegine/HCSR04-ultrasonic-sensor-lib). |
 | ESP8266 Board for Arduino | Version 2.6.3 by the ESP8266 Community [ESP8266 Libraries](https://github.com/esp8266/Arduino) [ESP8266 Board](http://arduino.esp8266.com/stable/package_esp8266com_index.json). |
-| ESP8266 Wi-Fi Library for ESP8266 NodeMCU | <ESP8266WiFi.h>
-Based on WiFi.h from Arduino WiFi shield library. Copyright (c) 2011-2014 Arduino. Modified by Ivan Grokhotkov, December 2014. Provided in the esp8266 Arduino board. | This provides the functionality in configuring the network settings such as setting the network SSID, the SSID password, ports to be used, IP address, the subnet and other communication related settings. |
+| ESP8266 Wi-Fi Library for ESP8266 NodeMCU | <ESP8266WiFi.h> Based on WiFi.h from Arduino WiFi shield library. Copyright (c) 2011-2014 Arduino. Modified by Ivan Grokhotkov, December 2014. Provided in the esp8266 Arduino board. | This provides the functionality in configuring the network settings such as setting the network SSID, the SSID password, ports to be used, IP address, the subnet and other communication related settings. |
 | ESP8266 Web Server Library for ESP8266 NodeMCU | <ESP8266WebServer.h> Copyright (c) 2014 Ivan Grokhotkov. Provided in the esp8266 Arduino board. | This provides the network router or the web server that serves as the address or the routes wherein date could be sent or retrieved. |
