@@ -1,5 +1,5 @@
 /*
-  The S.A.R.I.B.O. Leaf Module
+  The S.A.R.I.B.O. Leaf Module - Arduino Nano Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
 
   Version 1.01.01 Revision March 11, 2020
