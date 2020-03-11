@@ -7,8 +7,10 @@
  * Irrigation systems for
  * Backyard farming Operations
 
- * Version 1.01.01 Revision March 9, 2020
+ * Version 1.1.1 Revision March 9, 2020
  * by Roy Joseph B. Argumido
+ * 
+ * This is a stable code.
  * 
  */
 
