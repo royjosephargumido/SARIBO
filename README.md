@@ -7,7 +7,7 @@ SARIBO contains two modules:
 1. SARIBO Leaf Module (SARIBO Leaf). The SARIBO Leaf Module which controls the connected sensors and is placed on the field.
 2. SARIBO Root Module (SARIBO Root). The SARIBO Root Module is the main controller module which controls the watering process, activation of relays for the pump and valves, water level among others.
 
-The following are the required minimum hardware requirements for SARIBO:
+The following are the hardware requirements for SARIBO:
 
 | Hardware  | Description |
 | ------------- | ------------- |
@@ -23,7 +23,12 @@ The following are the required minimum hardware requirements for SARIBO:
 
 
 
-The following are the required minimum software requirements for SARIBO:
+The following are the software requirements for SARIBO:
 
-| Software | Description |
-| ------------- | ------------- |
+| Software | Specification | Description |
+| ------------- | ------------- | ------------- |
+| Arduino IDE | Version 1.8.10 | Serves as the Integrated Development Environment (IDE) of the Arduino wherein codes during the development are written using the software. |
+| Arduino Nano ATmega328P CH340G Device Driver | | Used as the device driver of the Arduino Nano that uses the cheap CH340G IC. |
+| ArduinoJSON Library for Arduino | <ArduinoJson.h>
+Version 6.14.1 by Benoit Blanchon (github.com/bblanchon/ArduinoJson) | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
+
