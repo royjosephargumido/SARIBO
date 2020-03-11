@@ -1,5 +1,4 @@
 # SARIBO
-git tag <irrigation>
   
 SARIBO or Systematic and Automated Regulation of Irrigation systems for
 Backyard farming Operations is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using Arduino Nano and ESP8266 NodeMCU 12E. SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
