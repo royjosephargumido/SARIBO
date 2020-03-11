@@ -29,7 +29,7 @@ The following are the software requirements for SARIBO:
 | ------------- | ------------- | ------------- |
 | Arduino IDE | Version 1.8.10 | Serves as the Integrated Development Environment (IDE) of the Arduino wherein codes during the development are written using the software. |
 | Arduino Nano ATmega328P CH340G Device Driver | | Used as the device driver of the Arduino Nano that uses the cheap CH340G IC. |
-| ArduinoJSON Library for Arduino | <ArduinoJson.h> Version 6.14.1 by Benoit Blanchon This site was built using ArduinoJson Library (github.com/bblanchon/ArduinoJson). | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
+| ArduinoJSON Library for Arduino | <ArduinoJson.h> Version 6.14.1 by Benoit Blanchon This site was built using [ArduinoJson Library](github.com/bblanchon/ArduinoJson). | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
 | SD Library for Arduino | <SD.h> Version 1.2.4 by Arduino.cc and SparkFun (https://www.arduino.cc/en/Reference/SD) | An Arduino library used for the data logging purposes. |
 | Software Serial Library for Arduino | <SoftwareSerial.h> Included in the Arduino Core libraries (http://arduiniana.org/libraries/newsoftserial/) | Provides the functionality for the software serial communication between the Arduino Nano and the ESP8288 NodeMCU Wi-Fi Module. |
 | Real Time Clock (RTC) Library for Arduino | <RTClib.h> Version 1.3.3 by AdaFruit (github.com/adafruit/RTClib) | Provides the functionality for the setting and accessing of date and time. |
