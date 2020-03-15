@@ -1,7 +1,6 @@
 /*
   The S.A.R.I.B.O. Leaf Module - Arduino Nano Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-
   Version 1.01.01 Revision March 11, 2020
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -46,6 +45,10 @@ bool stopCheck = false;     // Used as a counter whether to continue or stop the
 unsigned long oldTime;      // Used in calculating the  seconds passed since the initial time reading 
 long int soilmoisture = 0;  // The soil moisture value is saved as a long data type to cater higher precission
 
+int flowPin = 2;    //This is the input pin on the Arduino
+double flowRate;    //This is the value we intend to calculate.
+volatile int tally; //This integer needs to be set as volatile to ensure it updates correctly during the interrupt process.
+
 void performRTCCheck() {
   /* 
    *  Checks if the RTC module is connected to the Arduino
@@ -78,6 +81,22 @@ void performRTCCheck() {
      *  rtc.adjust(DateTime(2020, 3, 8, 3, 0, 0));
      */
   }
+}
+
+double calculateWaterFlow() {
+  tally = 0;      // Reset the counter so we start counting from 0 again
+  interrupts();   //Enables interrupts on the Arduino
+  delay (1000);   //Wait 1 second 
+  noInterrupts(); //Disable the interrupts on the Arduino
+   
+  //Start the math
+  flowRate = (tally * 2.25);        //Take counted pulses in the last second and multiply by 2.25mL 
+  flowRate = flowRate * 60;         //Convert seconds to minutes, giving you mL / Minute
+  flowRate = flowRate / 1000;       //Convert mL to Liters, giving you Liters / Minute
+
+  Serial.print(flowRate);         //Print the variable flowRate to Serial
+  Serial.println(" Liters per minute");
+  return flowRate;
 }
 
 void checkSoilMoisture()
@@ -134,7 +153,7 @@ void checkSoilMoisture()
         createRequestTable(101, finalSoilMoisture);
         Serial.print("Open Leaf01 distribution valve request sent.");
       }
-      else if(SoilMoistureValue < minsoildryness)
+      else if(finalSoilMoisture < minsoildryness)
       {
         /* 
          * Soil is WET when the final soil moisture value is lesser than the
@@ -193,12 +212,22 @@ void setup() {
    *  also used in as the baud rate for the serial communication
    */
   Serial.begin(19200);
+  
+  pinMode(flowPin, INPUT);           //Sets the pin as an input
+  attachInterrupt(0, flowInterrupt, RISING);  //Configures interrupt 0 (pin 2 on the Arduino Uno) to run the function "Flow"
 
-  performRTCCheck();  // Checks the presence of the RTC module during program start
+  //performRTCCheck();  // Checks the presence of the RTC module during program start
 }
 
 void loop() {
-  DateTime now = rtc.now(); // Sets the DateTime object "now" as the current DateTime of the system
-  checkSoilMoisture();  // Checks the soil moisture
+  //DateTime now = rtc.now(); // Sets the DateTime object "now" as the current DateTime of the system
+  //checkSoilMoisture();  // Checks the soil moisture
+
+  calculateWaterFlow();
   delay(1000);  // Creates a delay of 1 second 
+}
+
+void flowInterrupt()
+{
+   tally++; //Every time this function is called, increment "count" by 1
 }
