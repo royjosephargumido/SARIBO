@@ -47,7 +47,7 @@ void checkSoilMoisture()
      * reads and compute the average soil moisture sensor
      * once every second for 1 minute for better accuracy
      */
-    if(((millis() - oldTime) > 1000) && count < 11)
+    if(((millis() - oldTime) > 1000) && count < 61)
     {
       soilmoisture += analogRead(A0);   // Reads the soil moisture and adds the old readings
 
@@ -64,7 +64,7 @@ void checkSoilMoisture()
     }
 
     // Stops soil moisture reading until 1 minute (60 seconds)
-    if(count == 10)
+    if(count == 60)
     {
       oldTime = 0;       // Resets the millisecond timer
       count = 0;        // Resets the number of seconds counter
