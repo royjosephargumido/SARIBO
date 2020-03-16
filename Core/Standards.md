@@ -6,7 +6,7 @@ The following are the SARIBO standards used in parsing and deserializing a reque
 Request Standards Table (2 character format)
 -----------------------------------------------------------
 
-10	Distribution Line - General request
+10	Distribution Line
 11	Open Distribution Line
 12	Close Distribution Line
 
