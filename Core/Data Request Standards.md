@@ -23,9 +23,11 @@ Request Standards Table (2 character format)
 
 Data Table
 -----------------------------------------------------------
-o		//Origin or where the data come from
-r		//Request see Request Table
-v		//Validation or return value e.g. soil moisture value
+| Code  | Description |
+| ------------- | ------------- |
+| o | Origin or where the data come from |
+| r | Request see Request Standards Table |
+| v | Validation or return value e.g. soil moisture value |
 
 
 Hardware ID naming and registration:
@@ -48,11 +50,12 @@ E.g.:
 L1 means Leaf Module 1
 
 
-Data Process Table
+Sample Data Request
 -----------------------------------------------------------
+
 Process: Leaf01 to Root Open Distribution Line
 Returns:
 
-o:	L1
-r:	11
-v:	887
+o: L1
+r: 11
+v: 887
