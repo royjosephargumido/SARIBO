@@ -30,16 +30,7 @@ Soil Moisture Reading Algorithm
 
 Source Code
 -----------------------------------------------------------
-
-/*
- * Source code for Soil Moisture Checking
- * SARIBO v. 1.2.2 Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
- */
-int count = 1;              // Used in calculating the number of soil moisture check
-bool stopCheck = false;     // Used as a counter whether to continue or stop the soil moisture reading
-unsigned long oldTime;      // Used in calculating the  seconds passed since the initial time reading 
-long int soilmoisture = 0;  // The soil moisture value is saved as a long data type to cater higher precission
-
+```Arduino
 void checkSoilMoisture()
 {
   int finalSoilMoisture = 0;
@@ -109,5 +100,4 @@ void checkSoilMoisture()
     }
   }
 }
-
-
+```
