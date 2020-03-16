@@ -32,20 +32,16 @@ Data Table
 
 Hardware ID naming and registration:
 -----------------------------------------------------------
-Format: MN
+**Format: <module_type><module_number>**
 
-Where:
+*Where module type:*
 
-M = Module type:
+| Code  | Description |
+| ------------- | ------------- |
+| R | Root Module, default is R0 |
+| L | Leaf Module, starts in L1...L*n* |
 
-R = Root module
-L = Leaf module
-
-
-N = module number
-
-
-E.g.:
+Example:
 
 L1 means Leaf Module 1
 
