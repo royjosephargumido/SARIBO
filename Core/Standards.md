@@ -5,29 +5,21 @@ The following are the SARIBO standards used in parsing and deserializing a reque
 
 Request Standards Table (2 character format)
 -----------------------------------------------------------
-
-10	Distribution Line
-11	Open Distribution Line
-12	Close Distribution Line
-
-20	Soil Moisture Reading
-
-30	Water Flow Reading
-
-40	Power Reading
-
-50	Time Reading
-51	Perform Date and Time Sync between Leaf and Root
-
-60	Network Reading
-61	Ping Request
-
-70	Settings
-71	Synchronize Settings in the network
-
-80	SARIBO General Channel
-
-90	Log, High Verbosity
+| Code  | Description |
+| ------------- | ------------- |
+| 10 | Distribution Line - General Request |
+| 11 | Open Distribution Line |
+| 20 | Soil Moisture Reading |
+| 30 | Water Flow Reading |
+| 40 | Power Reading |
+| 50 | Time Reading |
+| 51 | Perform Date and Time Sync between Leaf and Root |
+| 60 | Network Reading |
+| 61 | Ping Request |
+| 70 | Settings |
+| 71 | Synchronize Settings in the network |
+| 80 | SARIBO General Channel |
+| 90 | Log, High Verbosity |
 
 Data Table
 -----------------------------------------------------------
