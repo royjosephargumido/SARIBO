@@ -21,6 +21,7 @@ Request Standards Table (2 character format)
 | 80 | SARIBO General Channel |
 | 90 | Log, High Verbosity |
 
+
 Data Table
 -----------------------------------------------------------
 | Code  | Description |
@@ -28,6 +29,7 @@ Data Table
 | o | Origin or where the data come from |
 | r | Request see Request Standards Table |
 | v | Validation or return value e.g. soil moisture value |
+
 
 
 Hardware ID naming and registration:
