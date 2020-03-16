@@ -1,5 +1,7 @@
 Data Request Standards v. 2.0 rev Mar. 16, 2020
 -----------------------------------------------------------
+The following are the SARIBO standards used in parsing and deserializing a request table.
+
 
 Request Standards Table (2 character format)
 -----------------------------------------------------------
