@@ -1,7 +1,8 @@
 /*
   The S.A.R.I.B.O. Leaf Module - Arduino Nano Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.01.01 Revision March 11, 2020
+  Version 1.02.03 Revision March 17, 2020
+  
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
   All rights reserved.
@@ -37,6 +38,29 @@
 #include <RTClib.h>         // Provides the Date Time functionality
 #include <SoftwareSerial.h> // Provides the serial communication
 
+const String hardwareID = "L1";
+//====================================================
+/* 
+ * DO NOT MODIFY THIS CODES WITHOUT MODIFYING THE CODES
+ * PRESENT IN THE SERVER SIDE
+ * 
+ * THIS COMPLIES WITH THE
+ * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
+ */
+const int openDistributionLine = 11;
+const int closeDistributionLine = 12;
+const int soilMoistureReading = 20;
+const int waterFlowRateReading = 30;
+const int powerReading = 40;
+const int timeReading = 50;
+const int syncTime = 51;
+const int networkReading = 60;
+const int sendPingRequest = 61;
+const int getServerSettings = 70;
+const int setClientSetting = 71;
+//====================================================
+
+//================================ OBJECTS AND GLOBAL VARIABLES ================================
 DateTime now;     // Creates a DateTime object
 RTC_DS3231 rtc;   // Creates the RTC object
 
@@ -48,8 +72,10 @@ long int soilmoisture = 0;  // The soil moisture value is saved as a long data t
 int flowPin = 2;    //This is the input pin on the Arduino
 double flowRate;    //This is the value we intend to calculate.
 volatile int tally; //This integer needs to be set as volatile to ensure it updates correctly during the interrupt process.
+//==============================================================================================
 
-void performRTCCheck() {
+void performRTCCheck()
+{
   /* 
    *  Checks if the RTC module is connected to the Arduino
    *  Continues to loop until the RTC module is connected to the Arduino.
@@ -83,7 +109,8 @@ void performRTCCheck() {
   }
 }
 
-double calculateWaterFlow() {
+double calculateWaterFlow()
+{
   tally = 0;      // Reset the counter so we start counting from 0 again
   interrupts();   //Enables interrupts on the Arduino
   delay (1000);   //Wait 1 second 
@@ -139,7 +166,6 @@ void checkSoilMoisture()
       //load the configurations from /System/SYSDEF.TXT
       int maxsoildryness = 1001;    //Maximum soil dryness value
       int minsoildryness = 500;     //Minimum soil dryness value
-      int maxsoilwetness = 190;     //Maximum soil wetness that triggers to close the distribution
 
       if(finalSoilMoisture < maxsoildryness && finalSoilMoisture > minsoildryness)
       {
@@ -148,9 +174,10 @@ void checkSoilMoisture()
          * then creates an open distribution valve request to the Root module
          * sending the final soil moisture value as a validating value for double checking.
          * 
-         * 101 = code for OPEN distribution valve request as specified in the data request table
+         * 11 = code for OPEN distribution valve request as specified in
+         * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
          */
-        createRequestTable(101, finalSoilMoisture);
+        createRequestTable(openDistributionLine, finalSoilMoisture);
         Serial.print("Open Leaf01 distribution valve request sent.");
       }
       else if(finalSoilMoisture < minsoildryness)
@@ -161,17 +188,18 @@ void checkSoilMoisture()
          * valve request to the Root module and attaches the final soil moisture
          * value as a validating value for double checking.
          * 
-         * 102 = code for CLOSE distribution valve request as specified in the data request table
+         * 12 = code for CLOSE distribution valve request as specified in
+         * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
          */
-        createRequestTable(102, finalSoilMoisture);
+        createRequestTable(closeDistributionLine, finalSoilMoisture);
         Serial.print("\n\nClose Leaf01 distribution valve request sent.");
       }
     }
   }
 }
 
-void createRequestTable(int requestValue, int validatingValue)
-{
+void createRequestTable(int requestValue, int validatingValue) 
+{  
   //DateTime Stamping procedures
   DateTime now = rtc.now();
   String DateSent = ((String)now.day()) + "/" + ((String)now.month()) + "/" + ((String)now.year());
@@ -188,16 +216,12 @@ void createRequestTable(int requestValue, int validatingValue)
    *  
    *  See: arduinojson.org/v6/assistant/
    */
-  const size_t capacity = JSON_OBJECT_SIZE(7) + 600;
+  const size_t capacity = JSON_OBJECT_SIZE(3) + 100;
   DynamicJsonDocument data(capacity);
 
-  data["sendrequest"] = 1111;                    // 1111 as a validator code for a valid serial communication
-  data["id"] = "leaf01-101-11x57x34-2x21x2020";  // Transaction ID
-  data["datesent"] = DateSent;                   // The date when the message is created
-  data["timesent"] = TimeSent;                   // The time when the message is created
-  data["origin"] = "689DB004-E03A-4A37-9944-02CB7B2844BE"; // The hardware UUID assigned to the specific Leaf Module
-  data["request"] = requestValue;                // The request code
-  data["value"] = validatingValue;               // The validating value
+  data["o"] = hardwareID;         // The hardware UUID assigned to the specific Leaf Module
+  data["r"] = requestValue;       // The request code
+  data["v"] = validatingValue;    // The validating value
 
   /* 
    *  This serializes the JSON object "data" then send through the serial
@@ -216,12 +240,12 @@ void setup() {
   pinMode(flowPin, INPUT);           //Sets the pin as an input
   attachInterrupt(0, flowInterrupt, RISING);  //Configures interrupt 0 (pin 2 on the Arduino Uno) to run the function "Flow"
 
-  //performRTCCheck();  // Checks the presence of the RTC module during program start
+  performRTCCheck();  // Checks the presence of the RTC module during program start
 }
 
 void loop() {
-  //DateTime now = rtc.now(); // Sets the DateTime object "now" as the current DateTime of the system
-  //checkSoilMoisture();  // Checks the soil moisture
+  DateTime now = rtc.now(); // Sets the DateTime object "now" as the current DateTime of the system
+  checkSoilMoisture();  // Checks the soil moisture
 
   calculateWaterFlow();
   delay(1000);  // Creates a delay of 1 second 
