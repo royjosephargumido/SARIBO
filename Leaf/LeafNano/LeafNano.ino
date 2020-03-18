@@ -1,7 +1,7 @@
 /*
-  The S.A.R.I.B.O. Leaf Module - Arduino Nano Code
+  The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.02.03 Revision March 17, 2020
+  Version 1.02.04 Revision March 18, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -36,9 +36,12 @@
 
 #include <ArduinoJson.h>    // Used in sending data. Uses the ArduinoJson version 6.14.1
 #include <RTClib.h>         // Provides the Date Time functionality
-#include <SoftwareSerial.h> // Provides the serial communication
+#include <ESP8266WiFi.h>
 
+//====================================================
 const String hardwareID = "L1";
+const int soilmoisturePin = A0;
+const int waterflowsensorPin = 13; // variable for D7/GPIO Pin 13
 //====================================================
 /* 
  * DO NOT MODIFY THIS CODES WITHOUT MODIFYING THE CODES
@@ -64,14 +67,19 @@ const int setClientSetting = 71;
 DateTime now;     // Creates a DateTime object
 RTC_DS3231 rtc;   // Creates the RTC object
 
-int count = 1;              // Used in calculating the number of soil moisture check
-bool stopCheck = false;     // Used as a counter whether to continue or stop the soil moisture reading
-unsigned long oldTime;      // Used in calculating the  seconds passed since the initial time reading 
-long int soilmoisture = 0;  // The soil moisture value is saved as a long data type to cater higher precission
+bool stopSMCheck = false;     // Used as a counter whether to continue or stop the soil moisture reading
 
-int flowPin = 2;    //This is the input pin on the Arduino
-double flowRate;    //This is the value we intend to calculate.
-volatile int tally; //This integer needs to be set as volatile to ensure it updates correctly during the interrupt process.
+int times = 1;
+unsigned long oldTime;      // Used in calculating the  seconds passed since the initial time reading
+const char monthNames[127][12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+
+long int soilmoistureReadings = 0;  // The soil moisture value is saved as a long data type to cater higher precission
+
+float calibrationFactor = 4.5;  //The hall-effect flow sensor outputs approximately 4.5 pulses per second per litre per minute of flow.
+volatile byte pulseCount = 0;
+float flowRate = 0.00;
+unsigned int flowMilliLitres = 0;
+unsigned long totalMilliLitres = 0;
 //==============================================================================================
 
 void performRTCCheck()
@@ -109,125 +117,196 @@ void performRTCCheck()
   }
 }
 
-double calculateWaterFlow()
+float calculateWaterFlow()
 {
-  tally = 0;      // Reset the counter so we start counting from 0 again
   interrupts();   //Enables interrupts on the Arduino
-  delay (1000);   //Wait 1 second 
+  delay (1000);   //Wait for 1 second 
   noInterrupts(); //Disable the interrupts on the Arduino
-   
-  //Start the math
-  flowRate = (tally * 2.25);        //Take counted pulses in the last second and multiply by 2.25mL 
-  flowRate = flowRate * 60;         //Convert seconds to minutes, giving you mL / Minute
-  flowRate = flowRate / 1000;       //Convert mL to Liters, giving you Liters / Minute
 
-  Serial.print(flowRate);         //Print the variable flowRate to Serial
-  Serial.println(" Liters per minute");
+  // Because this loop may not complete in exactly 1 second intervals we calculate
+  // the number of milliseconds that have passed since the last execution and use
+  // that to scale the output. We also apply the calibrationFactor to scale the output
+  // based on the number of pulses per second per units of measure (litres/minute in
+  // this case) coming from the sensor.
+  flowRate = ((1000 / (millis() - oldTime)) * pulseCount) / calibrationFactor;
+
+  // Note the time this processing pass was executed. Note that because we've
+  // disabled interrupts the millis() function won't actually be incrementing right
+  // at this point, but it will still return the value it was set to just before
+  // interrupts went away.
+  oldTime = millis();
+
+  // Divide the flow rate in litres/minute by 60 to determine how many litres have
+  // passed through the sensor in this 1 second interval, then multiply by 1000 to
+  // convert to millilitres.
+  flowMilliLitres = (flowRate / 60) * 1000;
+
+  // Add the millilitres passed in this second to the cumulative total
+  totalMilliLitres += flowMilliLitres;
+
+  Serial.print("Flow rate: ");
+  Serial.print(flowRate);
+  Serial.println(" L./Min.");
+  /*
+  // Print the number of litres flowed in this second
+  Serial.print("Current Liquid Flowing: "); // Output separator
+  Serial.print(flowMilliLitres);
+  Serial.print("mL/Sec");
+
+  // Print the cumulative total of litres flowed since starting
+  Serial.print("Output Liquid Quantity: "); // Output separator
+  Serial.print(totalMilliLitres);
+  Serial.println("mL");
+  */
+  // Reset the pulse counter so we can start incrementing again
+  pulseCount = 0;
+
   return flowRate;
 }
 
-void checkSoilMoisture()
+int soilMoistureManagement()
 {
-  int finalSoilMoisture = 0;
+  int finalSMV = 0;
   
-  if(stopCheck == false)
+  if(stopSMCheck == false)
   {
-    /* 
-     * reads and compute the average soil moisture sensor
-     * once every second for 1 minute for better accuracy
-     */
-    if(((millis() - oldTime) > 1000) && count < 11)
+    if(times < 11)
     {
-      soilmoisture += analogRead(A0);   // Reads the soil moisture and adds the old readings
-
-      /*
-       * Displays the data for verification
-       */
+      int sm = analogRead(soilmoisturePin);
       Serial.print("Reading #");
-      Serial.println(count);
-      Serial.print("Soil moisture: ");
-      Serial.println(soilmoisture);
-    
-      oldTime = millis();   // Saves the the number of milli seconds past since the reading
-      count = count + 1;    // Used in the reading for 1 minute
+      Serial.print(times);
+      Serial.print(": ");
+      Serial.println(sm);
+          
+      soilmoistureReadings += sm;
+      times = times + 1;
+      delay(1000);
     }
-
-    // Stops soil moisture reading until 1 minute (60 seconds)
-    if(count == 10)
+    if(times == 11)
     {
-      oldTime = 0;       // Resets the millisecond timer
-      count = 0;        // Resets the number of seconds counter
-      stopCheck = true; // Stops the reading of the soil moisture
-      finalSoilMoisture = soilmoisture / 10;  // Calculates the average soil moisture value
+      stopSMCheck = true;
+      finalSMV = soilmoistureReadings / 10;
       
-      Serial.print("Final Soil moisture: ");
-      Serial.println(finalSoilMoisture);
+      Serial.print("Final Reading: ");
+      Serial.println(finalSMV);
 
       //load the configurations from /System/SYSDEF.TXT
       int maxsoildryness = 1001;    //Maximum soil dryness value
-      int minsoildryness = 500;     //Minimum soil dryness value
-
-      if(finalSoilMoisture < maxsoildryness && finalSoilMoisture > minsoildryness)
+      int minsoildryness = 600;     //Minimum soil dryness value
+      int idealsoilmoisture = 450;
+  
+      if(finalSMV >= maxsoildryness)
       {
         /* 
-         * Soil is DRY based from the range of the Soil Dryness set by the user
-         * then creates an open distribution valve request to the Root module
-         * sending the final soil moisture value as a validating value for double checking.
-         * 
-         * 11 = code for OPEN distribution valve request as specified in
+         *  Soil moisture MISREADINGS.
+         *  If the final soil moisture value falls under this range,
+         *  the soil moisture is too dry for the error level of the sensor or
+         *  the sensor wires are broken giving misreadings.
+         *  
+         * 20 = code for SOIL MOISTURE READING REQUEST as specified in
          * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
          */
-        createRequestTable(openDistributionLine, finalSoilMoisture);
-        Serial.print("Open Leaf01 distribution valve request sent.");
-      }
-      else if(finalSoilMoisture < minsoildryness)
+         createRequest(soilMoistureReading, finalSMV);
+         Serial.println("\nSoil moisture misreading!");
+         Serial.println("Kindly check Leaf01 Soil Moisture Sensor for misreadings or check for broken sensor wires.");
+         stopSMCheck = true;
+         return 0;
+      }else
       {
-        /* 
-         * Soil is WET when the final soil moisture value is lesser than the
-         * minimum soil dryness threshold value then creates a close distribution 
-         * valve request to the Root module and attaches the final soil moisture
-         * value as a validating value for double checking.
-         * 
-         * 12 = code for CLOSE distribution valve request as specified in
-         * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
-         */
-        createRequestTable(closeDistributionLine, finalSoilMoisture);
-        Serial.print("\n\nClose Leaf01 distribution valve request sent.");
+        if(finalSMV < maxsoildryness && finalSMV > minsoildryness)
+        {
+          /* 
+           * Soil is DRY based from the range of the Soil Dryness set by the user
+           * then creates an open distribution valve request to the Root module
+           * sending the final soil moisture value as a validating value for double checking.
+           * 
+           * 11 = code for OPEN DISTRIBUTION VALVE REQUEST as specified in
+           * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
+           */
+          createRequest(openDistributionLine, finalSMV);
+          Serial.println("\nSoil is dry!");
+          Serial.println("Open Leaf01 distribution valve request sent.");
+        }
+        else if(finalSMV <= minsoildryness && finalSMV > idealsoilmoisture)
+        {
+          /* 
+           * Soil is in the IDEAL SOIL MOISTURE LEVEL and creates a
+           * soil moisture reading request to the Root module sending
+           * the final soil moisture value
+           * 
+           * 20 = code for SOIL MOISTURE READING REQUEST as specified in
+           * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
+           */
+          Serial.println("\nSoil is in ideal soil moisture level.");
+          createRequest(soilMoistureReading, finalSMV);
+        }
+        else if(finalSMV <= idealsoilmoisture)
+        {
+          /* 
+           * Soil is WET when the final soil moisture value is lesser than the
+           * minimum soil dryness threshold value then creates a close distribution 
+           * valve request to the Root module and attaches the final soil moisture
+           * value as a validating value for double checking.
+           * 
+           * 12 = code for CLOSE DISTRIBUTION VALVE REQUEST as specified in
+           * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
+           */
+          createRequest(closeDistributionLine, finalSMV);
+          Serial.println("\nSoil is wet!");
+          Serial.println("Close Leaf01 distribution valve request sent.");
+        }//end else if(finalSMV < minsoildryness)
+        
+        stopSMCheck = true;
+        return 1;
       }
-    }
-  }
+    }//end if(times == 11)
+  }//end if(stopSMCheck == false)
 }
 
-void createRequestTable(int requestValue, int validatingValue) 
-{  
-  //DateTime Stamping procedures
-  DateTime now = rtc.now();
-  String DateSent = ((String)now.day()) + "/" + ((String)now.month()) + "/" + ((String)now.year());
-  String TimeSent = ((String)now.hour()) + ":" + ((String)now.minute()) + ":" +  ((String)now.second());
-  //End DateTime stamping procedures
-  
-  Serial.println(DateSent);
-  Serial.println(TimeSent);
-  Serial.println();
+String getDateTime(int DT)
+{
+}
 
+void createRequest(int requestCode, int validatingValue) 
+{  
   /* 
    *  Creates a JSON document and initializes its size based on the assistant
    *  found in the ArduinoJSON documentation website.
    *  
    *  See: arduinojson.org/v6/assistant/
    */
-  const size_t capacity = JSON_OBJECT_SIZE(3) + 100;
+  const size_t capacity = JSON_OBJECT_SIZE(7) + 600;
   DynamicJsonDocument data(capacity);
 
-  data["o"] = hardwareID;         // The hardware UUID assigned to the specific Leaf Module
-  data["r"] = requestValue;       // The request code
-  data["v"] = validatingValue;    // The validating value
+  data["interrupt"] = 1111;
+  data["datesent"] = "March 18, 2020";
+  data["timesent"] = "4:17:48 PM";
+  data["origin"] = hardwareID;         // The hardware UUID assigned to the specific Leaf Module
+  data["request"] = requestCode;       // The request code
+  data["value"] = validatingValue;    // The validating value
 
   /* 
    *  This serializes the JSON object "data" then send through the serial
    *  or sends the  JSON object "data" from Arduino to the NodeMCU via serial communication
    */
   serializeJson(data, Serial);
+}
+
+/* 
+ *  Interrupt Service Routine (ISR) should be placed before the setup() function and
+ *  the ISR should be placed into the IRAM of the NodeMCU and not in the RAM.
+ *  In the normal program compilation, objects and source codes are placed in the RAM,
+ *  but ISR's should be placed in the IRAM for faster access.
+ *  
+ *  This is to avoid the:
+ *  ISR not in IRAM! user exception (panic/abort/assert) runtime error
+ *  
+ *  IRAM (Internal RAM, or on-chip RAM (OCRAM)) is the address range of RAM that is internal to the CPU.
+ */
+void ICACHE_RAM_ATTR pulseCounter()
+{
+    // Increment the pulse counter
+    pulseCount++;
 }
 
 void setup() {
@@ -237,21 +316,22 @@ void setup() {
    */
   Serial.begin(19200);
   
-  pinMode(flowPin, INPUT);           //Sets the pin as an input
-  attachInterrupt(0, flowInterrupt, RISING);  //Configures interrupt 0 (pin 2 on the Arduino Uno) to run the function "Flow"
+  digitalWrite(waterflowsensorPin, HIGH);
+  attachInterrupt(digitalPinToInterrupt(waterflowsensorPin), pulseCounter, RISING);
 
-  performRTCCheck();  // Checks the presence of the RTC module during program start
+  //performRTCCheck();  // Checks the presence of the RTC module during program start
 }
 
 void loop() {
-  DateTime now = rtc.now(); // Sets the DateTime object "now" as the current DateTime of the system
-  checkSoilMoisture();  // Checks the soil moisture
-
-  calculateWaterFlow();
-  delay(1000);  // Creates a delay of 1 second 
-}
-
-void flowInterrupt()
-{
-   tally++; //Every time this function is called, increment "count" by 1
+  int res = soilMoistureManagement();
+  if(res == 0)
+  {
+    stopSMCheck = false;
+    soilmoistureReadings = 0;
+    times = 1;
+    soilMoistureManagement();
+  }else if(res == 1)
+  {
+    calculateWaterFlow();
+  }
 }
