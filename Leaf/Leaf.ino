@@ -33,7 +33,6 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 #include <ArduinoJson.h>    // Used in sending data. Uses the ArduinoJson version 6.14.1
 #include <RTClib.h>         // Provides the Date Time functionality
 #include <ESP8266WiFi.h>
