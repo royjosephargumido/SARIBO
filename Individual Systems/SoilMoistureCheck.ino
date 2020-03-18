@@ -1,7 +1,7 @@
 /*
-  The S.A.R.I.B.O. Leaf Module - Arduino Nano Code
+  The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.02.03 Revision March 17, 2020
+  Version 1.02.04 Revision March 17, 2020
 
   SOIL MOISTURE CHECKING PROTOTYPE SYSTEM ONLY
   Revision March 18, 2020
