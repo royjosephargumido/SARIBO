@@ -45,18 +45,14 @@
 
 #include <ESP8266WiFi.h> 
 
-// Variable init
-const int buttonPin = 13; // variable for D2 pin
+const int waterflowsensorPin = 13; // variable for D7/GPIO Pin 13
 
 // The hall-effect flow sensor outputs approximately 4.5 pulses per second per litre per minute of flow.
 float calibrationFactor = 4.5;
-
 volatile byte pulseCount;
-
 float flowRate;
 unsigned int flowMilliLitres;
 unsigned long totalMilliLitres;
-
 unsigned long oldTime;
 
 /* 
@@ -87,8 +83,8 @@ void setup()
     totalMilliLitres = 0;
     oldTime = 0;
 
-    digitalWrite(buttonPin, HIGH);
-    attachInterrupt(digitalPinToInterrupt(buttonPin), pulseCounter, RISING);
+    digitalWrite(waterflowsensorPin, HIGH);
+    attachInterrupt(digitalPinToInterrupt(waterflowsensorPin), pulseCounter, RISING);
 }
 
 void loop() {
