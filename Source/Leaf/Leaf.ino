@@ -1,7 +1,7 @@
 /*
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.2.4 Revision March 18, 2020
+  Version 1.2.5 Revision March 20, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -272,11 +272,11 @@ String getDateTime(int DT)
   // COnverting 24H to 12H with AM/PM designation
   if(now.hour() > 12) {
     h = now.hour() % 12;
-    HF = " PM";
+    HF = "+PM";
   }else
   {
     h = now.hour();
-    HF = " AM";
+    HF = "+AM";
   }
 
   // Adding the '0' Padding to minute if minute is lesser than 10
@@ -287,7 +287,7 @@ String getDateTime(int DT)
   if(now.second() < 10) { s = "0" + (String)now.second(); }
   else { s = (String)now.second(); }
   
-  String Date =  (String)monthNames[now.month()] + ' ' + (String)now.day() + ", " + (String)now.year();
+  String Date =  (String)monthNames[now.month()] + '+' + (String)now.day() + ",+" + (String)now.year();
   String Time = (String)h + ':' + (String)m + ':' + (String)s + (String)HF;
 
   switch(DT)
