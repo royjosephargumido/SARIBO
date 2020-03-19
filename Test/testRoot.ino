@@ -7,56 +7,44 @@
 
 const char* wifiName = "SARIBO Server - Argumido";
 const char* wifiPass = "1234567890";
-const char* host = "http://192.168.8.108";
+IPAddress ip(192,168,8,108);
+IPAddress gateway(192,168,11,4);
+IPAddress subnet(255,255,255,0);
 
 ESP8266WebServer server(80);
 
 void setup() {
-  Serial.begin(115200);
-  delay(10);
-  Serial.println();
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(ip, gateway, subnet);
+  WiFi.softAP(wifiName, wifiPass);
   
-  Serial.print("Connecting to ");
-  Serial.println(wifiName);
-
-  WiFi.begin(wifiName, wifiPass);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());   //You can get IP address assigned to ESP
+  Serial.begin(115200); //NodeMCU serial baud rate channel
+  
+  Serial.println();
+  Serial.print("IP Address: ");
+  Serial.println("192.168.8.108");
+  
+  // Configure the server's routes
+  server.on("/", handleRequests); // use this route to update the sensor value
+  server.begin();
+  Serial.println("Root running @ COM 9");
 }
 
-void loop() {
-  HTTPClient http;    //Declare object of class HTTPClient
+void loop() { server.handleClient(); }
 
-  // Send request
-  http.useHTTP10(true);
-  http.begin(host);
-  http.GET();
-
-  DynamicJsonDocument data(2048);
-  deserializeJson(data, http.getStream());
-
-  // Decode JSON/Extract values
-  String Date = data["datesent"];
-  String Time = data["timesent"];
-  String Origin = data["origin"];
-  String Request = data["request"];
-  String Value = data["value"];
+void handleRequests()
+{
+  String payload;
   
-  Serial.println(F("Response:"));
-  Serial.println(Date);
-  Serial.println(Time);
-  Serial.println(Origin);
-  Serial.println(Request);
-  Serial.println(Value);
+  const size_t capacity = JSON_OBJECT_SIZE(5) + 500;
+  DynamicJsonDocument data(capacity);
 
-  http.end();  //Close connection
-  delay(5000);  //GET Data at every 5 seconds
+  data["datesent"] = "April 19, 2020";
+  data["timesent"] = "1:16:24 PM";
+  data["origin"] = "92EC9416";         // The hardware UUID assigned to the specific Leaf Module
+  data["request"] = 11;       // The request code
+  data["value"] = 678;    // The validating value
+
+  serializeJson(data, payload);
+  server.send(200, "text/html", payload);  
 }
