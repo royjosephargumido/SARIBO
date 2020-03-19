@@ -1,50 +1,62 @@
+#include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
+#include <WiFiClient.h> 
 #include <ESP8266WebServer.h>
 #include <SoftwareSerial.h>
-#include <ArduinoJson.h>
+#include <ESP8266HTTPClient.h>
 
-// Initialize network parameters
 const char* wifiName = "SARIBO Server - Argumido";
 const char* wifiPass = "1234567890";
-IPAddress ip(192,168,8,108);
-IPAddress gateway(192,168,11,4);
-IPAddress subnet(255,255,255,0);
+const char* host = "http://192.168.8.108";
 
-// Set up the server object
 ESP8266WebServer server(80);
 
 void setup() {
-  WiFi.mode(WIFI_AP);
-  WiFi.softAPConfig(ip, gateway, subnet);
-  WiFi.softAP(wifiName, wifiPass);
-  
-  Serial.begin(115200); //NodeMCU serial baud rate channel
-  
+  Serial.begin(115200);
+  delay(10);
   Serial.println();
-  Serial.print("IP Address: ");
-  Serial.println("192.168.8.108");
   
-  // Configure the server's routes
-  server.on("/", handleRequests); // use this route to update the sensor value
-  server.begin();
-  Serial.println("Root running @ COM 9");
+  Serial.print("Connecting to ");
+  Serial.println(wifiName);
+
+  WiFi.begin(wifiName, wifiPass);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());   //You can get IP address assigned to ESP
 }
 
-void loop() { server.handleClient(); }
+void loop() {
+  HTTPClient http;    //Declare object of class HTTPClient
 
-void handleRequests()
-{
-  String payload;
+  // Send request
+  http.useHTTP10(true);
+  http.begin(host);
+  http.GET();
+
+  DynamicJsonDocument data(2048);
+  deserializeJson(data, http.getStream());
+
+  // Decode JSON/Extract values
+  String Date = data["datesent"];
+  String Time = data["timesent"];
+  String Origin = data["origin"];
+  String Request = data["request"];
+  String Value = data["value"];
   
-  const size_t capacity = JSON_OBJECT_SIZE(5) + 500;
-  DynamicJsonDocument data(capacity);
+  Serial.println(F("Response:"));
+  Serial.println(Date);
+  Serial.println(Time);
+  Serial.println(Origin);
+  Serial.println(Request);
+  Serial.println(Value);
 
-  data["datesent"] = "April 19, 2020";
-  data["timesent"] = "1:16:24 PM";
-  data["origin"] = "92EC9416";         // The hardware UUID assigned to the specific Leaf Module
-  data["request"] = 11;       // The request code
-  data["value"] = 678;    // The validating value
-
-  serializeJson(data, payload);
-  server.send(200, "text/html", payload);  
+  http.end();  //Close connection
+  delay(5000);  //GET Data at every 5 seconds
 }
