@@ -17,7 +17,7 @@ void setup() {
   Serial.println();
   
   Serial.print("Connecting to ");
-  Serial.println(wifiName);
+  Serial.print(wifiName);
 
   WiFi.begin(wifiName, wifiPass);
 
@@ -27,8 +27,8 @@ void setup() {
   }
 
   Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
+  Serial.println("WiFi connected.");
+  Serial.print("IP address: ");
   Serial.println(WiFi.localIP());   //You can get IP address assigned to ESP
 }
 
@@ -51,10 +51,15 @@ void loop() {
   String Value = data["value"];
   
   Serial.println(F("Response:"));
+  Serial.print("Date Sent: ");
   Serial.println(Date);
+  Serial.print("Time Sent: ");
   Serial.println(Time);
+  Serial.print("Origin: ");
   Serial.println(Origin);
+  Serial.print("Request: ");
   Serial.println(Request);
+  Serial.print("Value: ");
   Serial.println(Value);
 
   http.end();  //Close connection
