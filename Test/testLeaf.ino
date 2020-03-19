@@ -1,16 +1,17 @@
+#include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h> 
+#include <ESP8266WebServer.h>
+#include <SoftwareSerial.h>
 #include <ESP8266HTTPClient.h>
-#include <ArduinoJson.h>
 
 const char* wifiName = "SARIBO Server - Argumido";
 const char* wifiPass = "1234567890";
-
-//Web Server address to read/write from 
 const char* host = "http://192.168.8.108";
 
+ESP8266WebServer server(80);
+
 void setup() {
-  
   Serial.begin(115200);
   delay(10);
   Serial.println();
