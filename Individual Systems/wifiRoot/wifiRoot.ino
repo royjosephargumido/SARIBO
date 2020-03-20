@@ -1,11 +1,10 @@
 /*
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.02.04 Revision March 18, 2020
   
   SARIBO PROTOTYPE FOR WIFI COMMUNICATION - ROOT MODULE
-  Compatible to SARIBO Version 1.02.04 and higher
-  Revision March 20, 2020
+  Compatible to SARIBO Version 1.2.4 and higher
+  Version 1.2 Revision March 20, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -41,8 +40,8 @@
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 
-const char *ssid      = "ssid";
-const char *password  = "password";
+const char *ssid      = "SARIBO Server - Argumido";
+const char *password  = "1234567890";
 
 ESP8266WebServer server(80);
 
