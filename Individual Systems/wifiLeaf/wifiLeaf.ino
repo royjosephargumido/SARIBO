@@ -44,7 +44,6 @@ WiFiClient client;
 
 const char* wifiName = "SARIBO Server - Argumido";
 const char* wifiPass = "1234567890";
-
 const char * host = "192.168.4.1";
 const int port = 80;
 
@@ -63,15 +62,22 @@ void setup() {
     Serial.print("Conecting to ");
     Serial.print(wifiName);
     Serial.println("...");
-    delay(500);
+    delay(250);
   }
 }
 
 void loop() {
   String payload = "";
 
+  Serial.print("Connecting to ");
+  Serial.print(host);
+  Serial.print(" @ port ");
+  Serial.println(port);
   if (!client.connect(host, port)) {
-    Serial.println("connection failed");
+    Serial.println("Error establishing connection to ");
+    Serial.print(host);
+    Serial.print(" @ port ");
+    Serial.println(port);
     return;
   }
   
@@ -89,10 +95,21 @@ void loop() {
   client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
 
   unsigned long timeout = millis();
-  while (client.available() == 0) {
-    if (millis() - timeout > 5000) {
-      Serial.println(">>> Client Timeout!");
+  while(client.available() == 0) {
+    Serial.println("Can't find Server! Reconnecting...");
+    if(millis() - timeout == 1000) {
+      Serial.println("Server timeout: 1 second.");
+    } else if(millis() - timeout == 2000) {
+      Serial.println("Server timeout: 2 seconds.");
+    } else if(millis() - timeout == 3000) {
+      Serial.println("Server timeout: 3 seconds.");
+    } else if(millis() - timeout == 4000) {
+      Serial.println("Server timeout: 4 seconds.");
+    } else if(millis() - timeout == 5000) {
+      Serial.print("Unable to establish connection to the Server!\n Terminating connection to .");
+      Serial.print(wifiName);
       client.stop();
+      Serial.print("Disconnected to server.");
       return;
     }
   }
