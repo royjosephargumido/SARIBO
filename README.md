@@ -39,3 +39,8 @@ The following are the **software requirements for SARIBO**:
 | ESP8266 Board for Arduino | Version 2.6.3 by the ESP8266 Community [ESP8266 Libraries](https://github.com/esp8266/Arduino) and [ESP8266 Board](http://arduino.esp8266.com/stable/package_esp8266com_index.json). | Provides the Wi-Fi communication and Web Server functionality. |
 | ESP8266 Wi-Fi Library for ESP8266 NodeMCU | <ESP8266WiFi.h> Based on WiFi.h from Arduino WiFi shield library. Copyright (c) 2011-2014 Arduino. Modified by Ivan Grokhotkov, December 2014. Provided in the esp8266 Arduino board. | This provides the functionality in configuring the network settings such as setting the network SSID, the SSID password, ports to be used, IP address, the subnet and other communication related settings. |
 | ESP8266 Web Server Library for ESP8266 NodeMCU | <ESP8266WebServer.h> Copyright (c) 2014 Ivan Grokhotkov. Provided in the esp8266 Arduino board. | This provides the network router or the web server that serves as the address or the routes wherein date could be sent or retrieved. |
+
+
+# Stable Version
+
+See the stable version @ **[SARIBO version 1.2.6](https://github.com/rjargumido/SARIBO/releases/tag/v1.2.6)**
