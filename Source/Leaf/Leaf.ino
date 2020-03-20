@@ -1,7 +1,7 @@
 /*
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.2.5 Revision March 20, 2020
+  Version 1.2.6 Revision March 20, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -37,11 +37,34 @@
 #include <RTClib.h>         // Provides the Date Time functionality
 #include <ESP8266WiFi.h>
 
-//====================================================
+//=========== PIN CONFIGURATION TO NODEMCU ===========
 const String hardwareID = "92EC9416";
 const int soilmoisturePin = A0;
 const int waterflowsensorPin = 13; // variable for D7/GPIO Pin 13
 //====================================================
+
+//================= NETWORK PARAMETERS ===============
+const char* wifiName = "SARIBO Server - Argumido";
+const char* wifiPass = "1234567890";
+const char * host = "192.168.4.1";
+const int port = 80;
+
+const char* route = "/data/?value=";
+//====================================================
+
+//============== ARDUINOJSON COMPONENTS ==============
+/* 
+ *  Creates a JSON document and initializes its size
+ *  based on the assistant found in the ArduinoJSON
+ *  documentation website.
+ *  
+ *  See: arduinojson.org/v6/assistant/
+ */
+const size_t capacity = JSON_OBJECT_SIZE(5) + 900;
+DynamicJsonDocument data(capacity);
+//====================================================
+
+//============== DATA REQUEST STANDARDS ==============
 /* 
  * DO NOT MODIFY THIS CODES WITHOUT MODIFYING THE CODES
  * PRESENT IN THE SERVER SIDE
@@ -63,6 +86,7 @@ const int setClientSetting = 71;
 //====================================================
 
 //================================ OBJECTS AND GLOBAL VARIABLES ================================
+WiFiClient client;
 DateTime now;     // Creates a DateTime object
 RTC_DS3231 rtc;   // Creates the RTC object
 
@@ -203,9 +227,10 @@ int soilMoistureManagement()
          * 20 = code for SOIL MOISTURE READING REQUEST as specified in
          * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
          */
-         createRequest(soilMoistureReading, finalSMV);
          Serial.println("\nSoil moisture misreading!");
          Serial.println("Kindly check Leaf01 Soil Moisture Sensor for misreadings or check for broken sensor wires.");
+         pushRequest(soilMoistureReading, finalSMV);
+         
          stopSMCheck = true;
          return 0;
       }else
@@ -220,9 +245,10 @@ int soilMoistureManagement()
            * 11 = code for OPEN DISTRIBUTION VALVE REQUEST as specified in
            * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
            */
-          createRequest(openDistributionLine, finalSMV);
           Serial.println("\nSoil is dry!");
           Serial.println("Open Leaf01 distribution valve request sent.");
+          pushRequest(openDistributionLine, finalSMV);
+          
         }
         else if(finalSMV <= minsoildryness && finalSMV > idealsoilmoisture)
         {
@@ -235,7 +261,7 @@ int soilMoistureManagement()
            * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
            */
           Serial.println("\nSoil is in ideal soil moisture level.");
-          createRequest(soilMoistureReading, finalSMV);
+          pushRequest(soilMoistureReading, finalSMV);
         }
         else if(finalSMV <= idealsoilmoisture)
         {
@@ -248,9 +274,9 @@ int soilMoistureManagement()
            * 12 = code for CLOSE DISTRIBUTION VALVE REQUEST as specified in
            * SARIBO Data Request Standards v. 2.0 rev Mar. 16, 2020
            */
-          createRequest(closeDistributionLine, finalSMV);
           Serial.println("\nSoil is wet!");
           Serial.println("Close Leaf01 distribution valve request sent.");
+          pushRequest(closeDistributionLine, finalSMV);
         }//end else if(finalSMV < minsoildryness)
         
         stopSMCheck = true;
@@ -260,10 +286,51 @@ int soilMoistureManagement()
   }//end if(stopSMCheck == false)
 }
 
+bool connectToServer() {
+  bool isCTS = false;
+  delay(10);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(wifiName, wifiPass);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print("Conecting to ");
+    Serial.print(wifiName);
+    Serial.println("...");
+    delay(250);
+  }
+
+  Serial.print("Connected to: ");
+  Serial.println(wifiName);
+  return true;
+}
+
+bool connectToHost() {
+  Serial.print("Connecting to ");
+  Serial.print(host);
+  Serial.print(" @ port ");
+  Serial.println(port);
+  
+  if (!client.connect(host, port)) {
+    Serial.println("Error establishing connection to ");
+    Serial.print(host);
+    Serial.print(" @ port ");
+    Serial.println(port);
+    return false;
+  } else {
+    Serial.println("Connected to host.");
+    return true; }
+}
+
 String getDateTime(int DT)
 {
+  /* 
+   *  0 = returns the current date
+   *  1 = returns the current time
+   *  2 = return the current date and time with a newline delimiter
+   */
   DateTime now = rtc.now();
-  const char monthNames[127][12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+  const char monthNames[12][12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
   String HF = "";
   int h = 0;
   String m = "";
@@ -310,17 +377,12 @@ String getDateTime(int DT)
   }
 }
 
-void createRequest(int requestCode, int validatingValue) 
-{  
-  /* 
-   *  Creates a JSON document and initializes its size based on the assistant
-   *  found in the ArduinoJSON documentation website.
-   *  
-   *  See: arduinojson.org/v6/assistant/
-   */
-  const size_t capacity = JSON_OBJECT_SIZE(5) + 500;
-  DynamicJsonDocument data(capacity);
+void pushRequest(int requestCode, int validatingValue) 
+{
+  String payload = "";
 
+  connectToHost();
+  
   data["datesent"] = getDateTime(0);
   data["timesent"] = getDateTime(1);
   data["origin"] = hardwareID;         // The hardware UUID assigned to the specific Leaf Module
@@ -331,7 +393,36 @@ void createRequest(int requestCode, int validatingValue)
    *  This serializes the JSON object "data" then send through the serial
    *  or sends the  JSON object "data" from Arduino to the NodeMCU via serial communication
    */
-  serializeJson(data, Serial);
+  serializeJson(data, payload);
+
+  String url = route + payload;
+
+  // This will send the request to the server
+  client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
+
+  unsigned long timeout = millis();
+  while(client.available() == 1) {
+    Serial.println("Can't find Server! Reconnecting...");
+    if(millis() - timeout == 1000) {
+      Serial.println("Server timeout: 1 second.");
+    } else if(millis() - timeout == 2000) {
+      Serial.println("Server timeout: 2 seconds.");
+    } else if(millis() - timeout == 3000) {
+      Serial.println("Server timeout: 3 seconds.");
+    } else if(millis() - timeout == 4000) {
+      Serial.println("Server timeout: 4 seconds.");
+    } else if(millis() - timeout == 5000) {
+      Serial.print("Unable to establish connection to the Server!\n Terminating connection to .");
+      Serial.print(wifiName);
+      client.stop();
+      Serial.print("Disconnected to server.");
+      return;
+    }
+  }
+
+  Serial.print("Data sent: ");
+  Serial.println(payload);
+  delay(1000);
 }
 
 /* 
@@ -357,6 +448,8 @@ void setup() {
    *  also used in as the baud rate for the serial communication
    */
   Serial.begin(19200);
+
+  connectToServer();
   
   digitalWrite(waterflowsensorPin, HIGH);
   attachInterrupt(digitalPinToInterrupt(waterflowsensorPin), pulseCounter, RISING);
