@@ -2,9 +2,9 @@
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
   
-  SARIBO PROTOTYPE FOR WIFI COMMUNICATION - ROOT MODULE
+  SARIBO WIFI COMMUNICATION STABLE PROTOTYPE - ROOT MODULE
   Compatible to SARIBO Version 1.2.4 and higher
-  Version 1.2 Revision March 20, 2020
+  Version 1.3 Revision March 21, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -36,63 +36,95 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
+#include <ESP8266WiFi.h>
 
-const char *ssid      = "SARIBO Server - Argumido";
-const char *password  = "1234567890";
+//================= NETWORK PARAMETERS ===============
+const char* ssid = "SARIBO Server - Argumido";
+const char* password = "1234567890";
+const char* host = "192.168.4.1";
+String urlPath = "/requests/";
 
 ESP8266WebServer server(80);
 
+DeserializationError err;
 const size_t capacity = JSON_OBJECT_SIZE(5) + 90;
-DynamicJsonDocument data(capacity);
+DynamicJsonDocument requestData(capacity);
+DynamicJsonDocument responseData(capacity);
+String requestPayload = "";
+String responsePayload = "";
+//====================================================
 
-void handleSentVar() {
-  String sensor_values;
-  if (server.hasArg("value")) {
-    sensor_values = server.arg(0);
-    Serial.println(sensor_values);
+void handleRoot() {
+  if (server.hasArg("data")) {
+    requestPayload = server.arg(0);
+    Serial.println("Leaf request data recieved.");
   }
 
-  DeserializationError err = deserializeJson(data, sensor_values);
+  err = deserializeJson(requestData, requestPayload);
   if (err) {
       Serial.print(F("deserializeJson() failed: "));
       Serial.println(err.c_str());
   }
-  
-  const char* datesent = data["datesent"];
-  const char* timesent = data["timesent"];
-  const char* origin = data["origin"];
-  int request = data["request"];
-  int value = data["value"];
-  
-  Serial.println(F("Response:"));
-  Serial.print("Date Sent: ");
-  Serial.println(datesent);
-  Serial.print("Time Sent: ");
-  Serial.println(timesent);
+
+  const char* origin = requestData["origin"];
+  const char* datesent = requestData["datesent"];
+  const char* timesent = requestData["timesent"];
+  int request = requestData["request"];
+  int value = requestData["value"];
+
+  Serial.println("============ REQUEST INFORMATION ============");
   Serial.print("Origin: ");
   Serial.println(origin);
+  
+  Serial.print("Date Sent: ");
+  Serial.println(datesent);
+  
+  Serial.print("Time Sent: ");
+  Serial.println(timesent);
+  
   Serial.print("Request: ");
   Serial.println(request);
+  
   Serial.print("Value: ");
   Serial.println(value);
+  Serial.println("=============================================");
+  
+  responseData["origin"] = "HF7890";
+  responseData["datesent"] = "April 1, 2020";
+  responseData["timesent"] = "10:42:11 PM";
+  responseData["request"] = 10;
+  responseData["value"] = "Leaf01 Open Distribution Line Request Approved.";
 
-  server.send(200, "text/plain", "Data received");
+  responsePayload = "";
+  serializeJson(responseData, responsePayload);
+  
+  server.send(200, "text/plain", responsePayload);
+  Serial.println("============ RESPONSE INFORMATION ===========");
+  Serial.println(responsePayload);
+  Serial.println("=============================================");
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
+  Serial.println();
+  
+  Serial.println("Starting Root Module Server...");
   WiFi.softAP(ssid, password);
   IPAddress myIP = WiFi.softAPIP();
-  
-  server.on("/data/", HTTP_GET, handleSentVar);
-  server.begin();
 
-  Serial.println("Root running @ COM 9");
-  Serial.print("IP: ");
+  Serial.print("SSID: ");
+  Serial.println(ssid);
+  Serial.print("IP Address: ");
+  Serial.println(myIP);
+  
+  server.on(urlPath, handleRoot);
+  server.begin();
+  Serial.print("SARIBO Root Server @ ");
   Serial.print(myIP);
+  Serial.println(urlPath);
+  Serial.println("SARIBO Root Server running.");
 }
 
 void loop() {
