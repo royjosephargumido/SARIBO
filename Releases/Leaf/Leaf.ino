@@ -1,7 +1,7 @@
 /*
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.2.6 Revision March 20, 2020
+  Version 1.2.7 Revision March 21, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -44,24 +44,18 @@ const int waterflowsensorPin = 13; // variable for D7/GPIO Pin 13
 //====================================================
 
 //================= NETWORK PARAMETERS ===============
-const char* wifiName = "SARIBO Server - Argumido";
-const char* wifiPass = "1234567890";
-const char * host = "192.168.4.1";
-const int port = 80;
+const char* ssid = "SARIBO Server - Argumido"; 
+const char* password = "1234567890"; 
+const char* host = "192.168.4.1";
+String urlPath = "/requests/?data=";
+const int httpPort = 80;
 
-const char* route = "/data/?value=";
-//====================================================
+WiFiClient client;
 
-//============== ARDUINOJSON COMPONENTS ==============
-/* 
- *  Creates a JSON document and initializes its size
- *  based on the assistant found in the ArduinoJSON
- *  documentation website.
- *  
- *  See: arduinojson.org/v6/assistant/
- */
-const size_t capacity = JSON_OBJECT_SIZE(5) + 900;
-DynamicJsonDocument data(capacity);
+DeserializationError err;
+const size_t capacity = JSON_OBJECT_SIZE(5) + 600;
+DynamicJsonDocument requestData(capacity);
+DynamicJsonDocument responseData(capacity);
 //====================================================
 
 //============== DATA REQUEST STANDARDS ==============
@@ -86,8 +80,6 @@ const int setClientSetting = 71;
 //====================================================
 
 //================================ OBJECTS AND GLOBAL VARIABLES ================================
-WiFiClient client;
-DateTime now;     // Creates a DateTime object
 RTC_DS3231 rtc;   // Creates the RTC object
 
 bool stopSMCheck = false;     // Used as a counter whether to continue or stop the soil moisture reading
@@ -183,6 +175,84 @@ float calculateWaterFlow()
   pulseCount = 0;
 
   return flowRate;
+}
+
+void connectToServer() {
+  Serial.println();
+  
+  Serial.print("\nConnecting to ");
+  Serial.print(ssid);
+  Serial.println("...");
+  
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  while(WiFi.status() != WL_CONNECTED) { delay(1000); }
+  
+  Serial.println();
+  Serial.print("Leaf connected to Root Server (");
+  Serial.print(ssid);
+  Serial.print(") @ ");
+  Serial.print(host);
+  Serial.print(" on port ");
+  Serial.println(httpPort);
+
+  Serial.print("Leaf IP Address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void connectToHost() {
+  while(!client.connect(host, httpPort)) {
+    Serial.print("Failed to connect to ");
+    Serial.print(host);
+    Serial.print(" on port ");
+    Serial.println(httpPort);
+    delay(1000);
+  }
+}
+
+void getServerResponse() {
+  unsigned long timeout = millis();
+  while(client.available() == 0) {
+    if (millis() - timeout > 5000) {
+      Serial.println(">>> Client Timeout!");
+      client.stop();
+      return;
+    }
+  }
+
+  String responsePayload = "";
+  while(client.available()) {
+    responsePayload = client.readStringUntil('\r');
+  }
+
+  err = deserializeJson(responseData, responsePayload);
+  if(err) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(err.c_str());
+  }
+  
+  const char* origin = responseData["origin"];
+  const char* datesent = responseData["datesent"];
+  const char* timesent = responseData["timesent"];
+  int request = responseData["request"];
+  const char* value = responseData["value"];
+
+  Serial.println("============ RESPONSE INFORMATION ============");
+  Serial.print("Origin: ");
+  Serial.println(origin);
+  
+  Serial.print("Date Sent: ");
+  Serial.println(datesent);
+  
+  Serial.print("Time Sent: ");
+  Serial.println(timesent);
+  
+  Serial.print("Request: ");
+  Serial.println(request);
+  
+  Serial.print("Value: ");
+  Serial.println(value);
+  Serial.println("=============================================");
 }
 
 int soilMoistureManagement()
@@ -286,42 +356,6 @@ int soilMoistureManagement()
   }//end if(stopSMCheck == false)
 }
 
-bool connectToServer() {
-  bool isCTS = false;
-  delay(10);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(wifiName, wifiPass);
-  
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print("Conecting to ");
-    Serial.print(wifiName);
-    Serial.println("...");
-    delay(250);
-  }
-
-  Serial.print("Connected to: ");
-  Serial.println(wifiName);
-  return true;
-}
-
-bool connectToHost() {
-  Serial.print("Connecting to ");
-  Serial.print(host);
-  Serial.print(" @ port ");
-  Serial.println(port);
-  
-  if (!client.connect(host, port)) {
-    Serial.println("Error establishing connection to ");
-    Serial.print(host);
-    Serial.print(" @ port ");
-    Serial.println(port);
-    return false;
-  } else {
-    Serial.println("Connected to host.");
-    return true; }
-}
-
 String getDateTime(int DT)
 {
   /* 
@@ -379,50 +413,50 @@ String getDateTime(int DT)
 
 void pushRequest(int requestCode, int validatingValue) 
 {
-  String payload = "";
-
   connectToHost();
   
-  data["datesent"] = getDateTime(0);
-  data["timesent"] = getDateTime(1);
-  data["origin"] = hardwareID;         // The hardware UUID assigned to the specific Leaf Module
-  data["request"] = requestCode;       // The request code
-  data["value"] = validatingValue;    // The validating value
+  String requestPayload = "";
+  
+  requestData["datesent"] = getDateTime(0);
+  requestData["timesent"] = getDateTime(1);
+  requestData["origin"] = hardwareID;         // The hardware UUID assigned to the specific Leaf Module
+  requestData["request"] = requestCode;       // The request code
+  requestData["value"] = validatingValue;    // The validating value
+
+  const char* origin = requestData["origin"];
+  const char* datesent = requestData["datesent"];
+  const char* timesent = requestData["timesent"];
+  int request = requestData["request"];
+  int value = requestData["value"];
 
   /* 
    *  This serializes the JSON object "data" then send through the serial
    *  or sends the  JSON object "data" from Arduino to the NodeMCU via serial communication
    */
-  serializeJson(data, payload);
+  serializeJson(requestData, requestPayload);
 
-  String url = route + payload;
+  String urlData = urlPath + requestPayload;
+  client.print(String("GET ") + urlData + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
 
-  // This will send the request to the server
-  client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
-
-  unsigned long timeout = millis();
-  while(client.available() == 1) {
-    Serial.println("Can't find Server! Reconnecting...");
-    if(millis() - timeout == 1000) {
-      Serial.println("Server timeout: 1 second.");
-    } else if(millis() - timeout == 2000) {
-      Serial.println("Server timeout: 2 seconds.");
-    } else if(millis() - timeout == 3000) {
-      Serial.println("Server timeout: 3 seconds.");
-    } else if(millis() - timeout == 4000) {
-      Serial.println("Server timeout: 4 seconds.");
-    } else if(millis() - timeout == 5000) {
-      Serial.print("Unable to establish connection to the Server!\n Terminating connection to .");
-      Serial.print(wifiName);
-      client.stop();
-      Serial.print("Disconnected to server.");
-      return;
-    }
-  }
-
-  Serial.print("Data sent: ");
-  Serial.println(payload);
-  delay(1000);
+  Serial.println("============ REQUEST INFORMATION ============");
+  Serial.print("Origin: ");
+  Serial.println(origin);
+  
+  Serial.print("Date Sent: ");
+  Serial.println(datesent);
+  
+  Serial.print("Time Sent: ");
+  Serial.println(timesent);
+  
+  Serial.print("Request: ");
+  Serial.println(request);
+  
+  Serial.print("Value: ");
+  Serial.println(value);
+  Serial.println("=============================================");
+  
+  getServerResponse();
+  Serial.println("Response recieved.");
 }
 
 /* 
@@ -447,26 +481,27 @@ void setup() {
    *  Sets the baud rate or the channel
    *  also used in as the baud rate for the serial communication
    */
-  Serial.begin(19200);
-
-  connectToServer();
+  Serial.begin(115200);
   
   digitalWrite(waterflowsensorPin, HIGH);
   attachInterrupt(digitalPinToInterrupt(waterflowsensorPin), pulseCounter, RISING);
 
   performRTCCheck();  // Checks the presence of the RTC module during program start
+
+  connectToServer();
 }
 
 void loop() {
   int res = soilMoistureManagement();
   if(res == 0)
   {
+    /* 
+     * soilMoistureManagement() will return 0 if it reads inaccurate soil moisture readings
+     * then repeats until it get accurate readings
+     */
     stopSMCheck = false;
     soilmoistureReadings = 0;
     times = 1;
     soilMoistureManagement();
-  }else if(res == 1)
-  {
-    calculateWaterFlow();
   }
 }
