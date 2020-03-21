@@ -1,11 +1,10 @@
 /*
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.02.04 Revision March 18, 2020
   
-  SARIBO PROTOTYPE FOR WIFI COMMUNICATION - LEAF MODULE
-  Compatible to SARIBO Version 1.02.04 and higher
-  Revision March 20, 2020
+  SARIBO WIFI COMMUNICATION STABLE PROTOTYPE - LEAF MODULE
+  Compatible to SARIBO Version 1.2.4 and higher
+  Version 1.3 Revision March 21, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -40,81 +39,107 @@
 #include <ESP8266WiFi.h>
 #include <ArduinoJson.h>
 
+//================= NETWORK PARAMETERS ===============
+const char* ssid = "SARIBO Server - Argumido"; 
+const char* password = "1234567890"; 
+const char* host = "192.168.4.1";
+String urlPath = "/requests/?data=";
+const int httpPort = 80;
+
 WiFiClient client;
 
-const char* wifiName = "SARIBO Server - Argumido";
-const char* wifiPass = "1234567890";
-const char * host = "192.168.4.1";
-const int port = 80;
+DeserializationError err;
+const size_t capacity = JSON_OBJECT_SIZE(5) + 600;
+DynamicJsonDocument requestData(capacity);
+DynamicJsonDocument responseData(capacity);
+String requestPayload = "";
+String responsePayload = "";
+//====================================================
 
-const size_t capacity = JSON_OBJECT_SIZE(5);
-DynamicJsonDocument data(capacity);
-
-
+int buff = 1;
 void setup() {
   Serial.begin(115200);
-  delay(10);
-
+  Serial.println();
+  
+  Serial.print("\nConnecting to ");
+  Serial.print(ssid);
+  Serial.println("...");
+  
   WiFi.mode(WIFI_STA);
-  WiFi.begin(wifiName, wifiPass);
+  WiFi.begin(ssid, password);
+  while(WiFi.status() != WL_CONNECTED) { delay(1000); }
+  
+  Serial.println();
+  Serial.print("Leaf connected to Root Server (");
+  Serial.print(ssid);
+  Serial.print(") @ ");
+  Serial.print(host);
+  Serial.print(" on port ");
+  Serial.println(httpPort);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print("Conecting to ");
-    Serial.print(wifiName);
-    Serial.println("...");
-    delay(250);
-  }
+  Serial.print("Leaf IP Address: ");
+  Serial.println(WiFi.localIP());
 }
 
 void loop() {
-  String payload = "";
-
-  Serial.print("Connecting to ");
-  Serial.print(host);
-  Serial.print(" @ port ");
-  Serial.println(port);
-  if (!client.connect(host, port)) {
-    Serial.println("Error establishing connection to ");
+  requestPayload = "";
+  while(!client.connect(host, httpPort)) {
+    Serial.print("Failed to connect to ");
     Serial.print(host);
-    Serial.print(" @ port ");
-    Serial.println(port);
-    return;
+    Serial.print(" on port ");
+    Serial.println(httpPort);
+    delay(1000);
   }
   
-  data["datesent"] = "April+1,+2020";
-  data["timesent"] = "10:32:24+PM";
-  data["origin"] = "92EC9416";
-  data["request"] = 11;
-  data["value"] = 678;
+  requestData["origin"] = "9E6R46";
+  requestData["datesent"] = "April+1,+2020";
+  requestData["timesent"] = "10:32:24+PM";
+  requestData["request"] = 11;
+  requestData["value"] = 762;
+  serializeJson(requestData, requestPayload);
 
-  serializeJson(data, payload);
-
-  String url = "/data/?value=" + payload;
-
-  // This will send the request to the server
-  client.print(String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
+  String urlData = urlPath + requestPayload;
+  client.print(String("GET ") + urlData + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" + "Connection: close\r\n\r\n");
 
   unsigned long timeout = millis();
   while(client.available() == 0) {
-    Serial.println("Can't find Server! Reconnecting...");
-    if(millis() - timeout == 1000) {
-      Serial.println("Server timeout: 1 second.");
-    } else if(millis() - timeout == 2000) {
-      Serial.println("Server timeout: 2 seconds.");
-    } else if(millis() - timeout == 3000) {
-      Serial.println("Server timeout: 3 seconds.");
-    } else if(millis() - timeout == 4000) {
-      Serial.println("Server timeout: 4 seconds.");
-    } else if(millis() - timeout == 5000) {
-      Serial.print("Unable to establish connection to the Server!\n Terminating connection to .");
-      Serial.print(wifiName);
+    if (millis() - timeout > 5000) {
+      Serial.println(">>> Client Timeout!");
       client.stop();
-      Serial.print("Disconnected to server.");
       return;
     }
   }
 
-  Serial.print("Data sent: ");
-  Serial.println(payload);
-  delay(1000);
+  while(client.available()) {
+    responsePayload = client.readStringUntil('\r');
+  }
+
+  err = deserializeJson(responseData, responsePayload);
+  if(err) {
+      Serial.print(F("deserializeJson() failed: "));
+      Serial.println(err.c_str());
+  }
+  
+  const char* origin = responseData["origin"];
+  const char* datesent = responseData["datesent"];
+  const char* timesent = responseData["timesent"];
+  int request = responseData["request"];
+  const char* value = responseData["value"];
+
+  Serial.println("============ RESPONSE INFORMATION ============");
+  Serial.print("Origin: ");
+  Serial.println(origin);
+  
+  Serial.print("Date Sent: ");
+  Serial.println(datesent);
+  
+  Serial.print("Time Sent: ");
+  Serial.println(timesent);
+  
+  Serial.print("Request: ");
+  Serial.println(request);
+  
+  Serial.print("Value: ");
+  Serial.println(value);
+  Serial.println("=============================================");
 }
