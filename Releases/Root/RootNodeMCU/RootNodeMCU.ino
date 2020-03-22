@@ -2,9 +2,8 @@
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
   
-  SARIBO WIFI COMMUNICATION STABLE PROTOTYPE - ROOT MODULE
-  Compatible to SARIBO Leaf Version 1.2.7 and higher
-  Version 1.1.3 Revision March 21, 2020
+  OFFICIAL STABLE RELEASE - Root Module, NodeMCU v3 (LoLin) Code
+  Version 1.2.7 Revision March 22, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -40,8 +39,10 @@
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 #include <RTClib.h>         // Provides the Date Time functionality
+#include <SoftwareSerial.h>
 
 RTC_DS3231 rtc;   // Creates the RTC object
+SoftwareSerial s(3,1);
 
 //================= NETWORK PARAMETERS ===============
 const char* ssid = "SARIBO Server - Argumido";
@@ -50,11 +51,18 @@ const char* host = "192.168.4.1";
 String urlPath = "/requests/";
 
 ESP8266WebServer server(80);
+//====================================================
 
+//=============== ARDUINOJSON COMPONENTS =============
 DeserializationError err;
-const size_t capacity = JSON_OBJECT_SIZE(5) + 90;
+
+const size_t capacity = JSON_OBJECT_SIZE(5) + 90; //For WiFi Communication
 DynamicJsonDocument requestData(capacity);
 DynamicJsonDocument responseData(capacity);
+
+const size_t serbuff = JSON_OBJECT_SIZE(2) + 50;  //For Serial Communication
+DynamicJsonDocument serialData(serbuff);
+
 String requestPayload = "";
 String responsePayload = "";
 //====================================================
@@ -167,6 +175,13 @@ void handleRoot() {
   int request = requestData["request"];
   int value = requestData["value"];
 
+  //============= SERIAL COMMUNICATION =============  
+  serialData["origin"] = origin;
+  serialData["request"] = request;
+
+  serializeJson(serialData, s);
+  //================================================
+  
   Serial.println("============ REQUEST INFORMATION ============");
   Serial.print("Origin: ");
   Serial.println(origin);
@@ -241,7 +256,8 @@ void startServer() {
 
 void setup() {
   Serial.begin(115200);
-
+  s.begin(9600);
+  
   performRTCCheck();  // Checks the presence of the RTC module during program start
 
   startServer();
