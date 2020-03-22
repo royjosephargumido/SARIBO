@@ -1,7 +1,9 @@
 /*
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.2.7 Revision March 21, 2020
+  
+  OFFICIAL STABLE RELEASE - Leaf Module, Arduino Nano Code
+  Version 1.2.7 Revision March 22, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
