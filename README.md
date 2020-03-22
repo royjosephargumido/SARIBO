@@ -11,7 +11,7 @@ SARIBO contains two modules:
 
 # Stable Version
 
-See the stable version @ **[SARIBO version 1.2.6](https://github.com/rjargumido/SARIBO/releases/tag/v1.2.6)**
+See the official stable version @ **[Official Stable Release SARIBO version 1.2.7](https://github.com/rjargumido/SARIBO/releases/tag/v.1.2.7)**
 
 
 # Hardware Requirements
