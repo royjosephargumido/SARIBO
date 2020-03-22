@@ -13,6 +13,14 @@ SARIBO contains two modules:
 
 See the official stable version @ **[Official Stable Release SARIBO version 1.2.7](https://github.com/rjargumido/SARIBO/releases/tag/v.1.2.7)**
 
+# Root Diagram
+
+![Root Fritzing Diagram](https://github.com/rjargumido/SARIBO/blob/master/Fritzing/Root%20Diagram.png)
+
+# Leaf Diagram
+
+![Leaf Fritzing Diagram](https://github.com/rjargumido/SARIBO/blob/master/Fritzing/Leaf%20Diagram.png)
+
 
 # Hardware Requirements
 
