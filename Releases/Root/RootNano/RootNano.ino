@@ -2,8 +2,8 @@
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
   
-  STABLE SARIBO ROOT MODULE PROTOTYPE
-  Version 1.1.4 Revision March 22, 2020
+  OFFICIAL STABLE RELEASE - Root Module, Arduino Nano Code
+  Version 1.2.7 Revision March 22, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -37,6 +37,7 @@
 
 #include <ArduinoJson.h>
 
+const int baudRate = 9600;
 //================= PIN CONFIGURATION ===============
 /* 
  *  NOTE:
@@ -164,7 +165,7 @@ void recieveData() {
 }
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(baudRate);
 
   setupRelays();
   Serial.println("Waiting for data...");
