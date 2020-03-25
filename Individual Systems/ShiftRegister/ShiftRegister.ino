@@ -76,42 +76,85 @@ void writeRegisters(){
   digitalWrite(RCLK_Pin, HIGH);
 }
 
+//
+void setPin(int index, int value){
+  /*
+   * Set an individual pin HIGH or LOW
+   */
+  registers[index] = value;
+}
+
+void pump() {
+  int countOpenLeafLines = 0;
+  for(int i = 8; i < totalPins; i++){
+     if(registers[i] == 0)  // Leaf Distribution Line is OPEN
+      countOpenLeafLines++;
+  }
+  if(countOpenLeafLines == 0) //There is no more open distribution lines
+    setPin(0, HIGH);  //PUMP OFF
+  else
+    setPin(0, LOW);  //PUMP ON
+}
+
+String leaf(const int leafNumber, const bool openLine) {
+  const int leafPin = leafNumber + 7;
+  String message = "";
+
+  /*  
+   * Checks if the leaf to be open has a
+   * registered pin number in the system
+   * based on the total number of pins available.
+   */
+  if(leafPin < totalPins) {
+    switch(openLine) {
+      case true:  //opens the specific leaf distribution line
+        setPin(leafPin, LOW);
+        message = "Leaf " + (String)leafNumber + " distribution line opened.";
+        break;
+
+      case false:  //opens the specific leaf distribution line
+        setPin(leafPin, HIGH);
+        message = "Leaf " + (String)leafNumber + " distribution line closed.";
+        break;
+    }
+  } else {
+    if(openLine == true)
+      message = "Unable to open Leaf " + (String)leafNumber + " distribution line.\nUnable to reach the Leaf's port number @ " + (String)leafPin + ".";
+    else
+      message = "Unable to close Leaf " + (String)leafNumber + " distribution line.\nUnable to reach the Leaf's port number @ " + (String)leafPin + ".";
+  }
+
+  pump();
+  return message;
+}
+
 void setup(){
   initRegisters();
 }
 
-//set an individual pin HIGH or LOW
-void setPin(int index, int value){
-  registers[index] = value;
-}
-
-
 void loop(){
-  setPin(8, LOW);
-  setPin(9, HIGH);
-  setPin(10, HIGH);
-  setPin(11, HIGH);
-  writeRegisters();  //MUST BE CALLED TO DISPLAY CHANGES  
-  delay(500);
 
-  setPin(8, HIGH);
-  setPin(9, LOW);
-  setPin(10, HIGH);
-  setPin(11, HIGH);
-  writeRegisters();  //MUST BE CALLED TO DISPLAY CHANGES  
-  delay(500);
+  leaf(2, true);
+  leaf(3, false);
+  leaf(4, false);
+  writeRegisters(); //Display changes
+  delay(2000);
 
-  setPin(8, HIGH);
-  setPin(9, HIGH);
-  setPin(10, LOW);
-  setPin(11, HIGH);
-  writeRegisters();  //MUST BE CALLED TO DISPLAY CHANGES  
-  delay(500);
+  leaf(2, false);
+  leaf(3, true);
+  leaf(4, false);
+  writeRegisters();
+  delay(2000);
 
-  setPin(8, HIGH);
-  setPin(9, HIGH);
-  setPin(10, HIGH);
-  setPin(11, LOW);
-  writeRegisters();  //MUST BE CALLED TO DISPLAY CHANGES  
-  delay(500);
+  leaf(2, false);
+  leaf(3, false);
+  leaf(4, true);
+  writeRegisters();
+  delay(2000);
+
+  leaf(2, false);
+  leaf(3, false);
+  leaf(4, false);
+  writeRegisters();
+  delay(2000);
 }
