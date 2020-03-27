@@ -1,9 +1,9 @@
   
 /*
-  The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
+  The S.A.R.I.B.O. Root Module - NodeMCU 12E esp8266 Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
   
-  STABLE RELEASE - Root Module, NodeMCU v3 (LoLin) Code
+  Stable Root (NodeMCU v3 (LoLin)) Module Code
   Version 1.3.1 Revision March 27, 2020
   
   BSD 3-Clause License
