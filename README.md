@@ -1,7 +1,6 @@
 # SARIBO
   
-SARIBO or Systematic and Automated Regulation of Irrigation systems for
-Backyard farming Operations is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using ESP8266 NodeMCU 12E v3 (LoLin). SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
+**SARIBO** or ***Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations** is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using ESP8266 NodeMCU 12E v3 (LoLin). SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
 
 SARIBO contains two modules:
 
@@ -45,7 +44,6 @@ The following are the **software requirements for SARIBO**:
 | Software | Specification | Description |
 | ------------- | ------------- | ------------- |
 | Arduino IDE | Version 1.8.10 | Serves as the Integrated Development Environment (IDE) of the Arduino wherein codes during the development are written using the software. |
-| Arduino Nano ATmega328P CH340G Device Driver | | Used as the device driver of the Arduino Nano that uses the cheap CH340G IC. |
 | ArduinoJSON Library for Arduino | Built using [<ArduinoJson.h> ArduinoJson Library version 6.14.1 by Benoit Blanchon](https://github.com/bblanchon/ArduinoJson). | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
 | SD Library for Arduino | Built using [<SD.h> SD Library version 1.2.4 by Arduino.cc and SparkFun](https://www.arduino.cc/en/Reference/SD). | An Arduino library used for the data logging purposes. |
 | Software Serial Library for Arduino | <SoftwareSerial.h> Included in the Arduino Core libraries using the [Software Serial Library](http://arduiniana.org/libraries/newsoftserial/) | Provides the functionality for the software serial communication between the Arduino Nano and the ESP8288 NodeMCU Wi-Fi Module. |
