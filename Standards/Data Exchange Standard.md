@@ -1,9 +1,12 @@
+#Data Exchange Standard (DES)
+
 The Data Exchange Standard (DES) is used as the core data exchange, transfer and processing rules used to ensure that the data is being processed the same way throughout the system. It is further divided into two:
 
 1. **Data Exchange Table** Is a table that is being used to consolidate relevant real-time data to be used in the exchange between the Leaf and the Root modules or vice versa.
 2. **Requests** Are 2-digit integer code used for determining what type of request is being sent or data to be send.
 
-***Requests***
+#Requests
+
 The following are the request codes under Request Code Table v2.1 revision March 31, 2020:
 
 | Request Code  | Description |
@@ -21,7 +24,7 @@ The following are the request codes under Request Code Table v2.1 revision March
 | 61 | Pull Root Settings |
 | 62 | Pull Leaf Settings |
 
-***Data Exchange Table***
+#Data Exchange Table
 The following is the table structure used under Data Exchange Table v2.2 revision March 31, 2020:
 
 | Data  | Description |
@@ -53,4 +56,4 @@ value : 892
 The above Data Exchange Table returns a string value of:
 *{"origin":"HC7E9701","destination":"RBF0928J","datesent":"April+1,+2020","timesent":7:02:09+AM","request":11,"value":892"}*
 
-The following followwing String value complies with the ArduinoJson object [*see: <ArduinoJson.h> ArduinoJson Library version 6.14.1 by Benoit Blanchon*](https://github.com/bblanchon/ArduinoJson) and the HTTP URL/URI standards.
+The following followwing String value complies with the ArduinoJson object [*see: <ArduinoJson.h> ArduinoJson Library version 6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and the HTTP URL/URI standards.
