@@ -87,19 +87,19 @@ The following is the table structure used under Data Exchange Table v2.2 revisio
 
 | Data  | Description |
 | ------------- | ------------- |
-| origin* | The Hardware ID of the requesting module |
-| destination* | The Hardware ID of the destination module of the request |
-| datesent** | The current date of the requesting module |
-| timesent*** | The current time of the requesting module |
-| request****  | The request code |
-| value  | The value being exchange as a validation/required data |
+| origin | The Hardware ID of the requesting module |
+| destination | The Hardware ID of the destination module of the request |
+| datesent | The current date of the requesting module |
+| timesent | The current time of the requesting module |
+| request | The request code |
+| value | The value being exchange as a validation/required data |
 
 
 Note:
 * Complies with the Hardware Id nomenclature Algorithm found at the Root Hardware ID Management Service (HIMS).
-** The Date object is in the format: MMMM dd, YYYY e.g. April 1, 2020 without the zero padding in the day object.
-*** The Time object is in the format: hh:mm:ss SS e.g. 7:02:09 AM with the zero padding on both minute and second objects only.
-**** Request codes complies with the recent Request Code Table under the Data Exchange Standard.
+* The Date object is in the format: MMMM dd, YYYY e.g. April 1, 2020 without the zero padding in the day object.
+* The Time object is in the format: hh:mm:ss SS e.g. 7:02:09 AM with the zero padding on both minute and second objects only.
+* Request codes complies with the recent Request Code Table under the Data Exchange Standard.
 
 
 Example:
