@@ -1,11 +1,11 @@
-#Data Exchange Standard (DES)
+# Data Exchange Standard (DES)
 
 The Data Exchange Standard (DES) is used as the core data exchange, transfer and processing rules used to ensure that the data is being processed the same way throughout the system. It is further divided into two:
 
 1. **Data Exchange Table** Is a table that is being used to consolidate relevant real-time data to be used in the exchange between the Leaf and the Root modules or vice versa.
 2. **Requests** Are 2-digit integer code used for determining what type of request is being sent or data to be send.
 
-#Requests
+# Requests
 
 The following are the request codes under Request Code Table v2.1 revision March 31, 2020:
 
@@ -24,7 +24,7 @@ The following are the request codes under Request Code Table v2.1 revision March
 | 61 | Pull Root Settings |
 | 62 | Pull Leaf Settings |
 
-#Data Exchange Table
+# Data Exchange Table
 The following is the table structure used under Data Exchange Table v2.2 revision March 31, 2020:
 
 | Data  | Description |
