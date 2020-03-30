@@ -1,7 +1,7 @@
 # SARIBO
   
 SARIBO or Systematic and Automated Regulation of Irrigation systems for
-Backyard farming Operations is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using Arduino Nano and ESP8266 NodeMCU 12E. SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
+Backyard farming Operations is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using ESP8266 NodeMCU 12E v3 (LoLin). SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
 
 SARIBO contains two modules:
 
@@ -28,7 +28,6 @@ The following are the **hardware requirements for SARIBO**:
 
 | Hardware  | Description |
 | ------------- | ------------- |
-| Arduino Nano ATmega328P CH340G  | The micro controller unit (MCU) responsible in the processing, management, control of the overall functionality of the system.  |
 | NodeMCU V3 ESP8266 ESP-12E  | The micro controller unit (MCU) responsible in the establishment, control, management, of the Wi-Fi communication functionality of the system.  |
 | 12V DC Plastic Solenoid Water Valve (Normally Closed) 1/2"| Used in opening individual Leaf Distribution Lines. |
 | Plastic Water Flow Sensor 1/2" | Used to determine the water flow rate. |
