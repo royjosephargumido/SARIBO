@@ -105,15 +105,10 @@ Note:
 Example:
 
 origin : HC7E9701
-
 destination : RBF0928J
-
 datesent : April 1, 2020
-
 timesent : 7:02:09 AM
-
 request : 11
-
 value : 892
 
 The above Data Exchange Table returns a string value of:
