@@ -79,6 +79,7 @@ The following are the request codes under Request Code Table v2.1 revision March
 | 51 | Ping Request |
 | 61 | Pull Root Settings |
 | 62 | Pull Leaf Settings |
+| 71 | Request for a Hardware ID |
 
 # Data Exchange Table
 The following is the table structure used under Data Exchange Table v2.2 revision March 31, 2020:
