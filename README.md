@@ -59,9 +59,9 @@ The SARIBO modules strictly follow file structuring schemes:
 
 **Leaf File Structuring**
 
-FileSystem:
-|
-+---Core
+ FileSystem:
+ |
+ +---Core
 |   |
 |   +--- "Source Codes for the Leaf Module"
 +---Documentation
