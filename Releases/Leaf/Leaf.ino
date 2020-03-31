@@ -40,7 +40,7 @@
 #include <ESP8266WiFi.h>
 
 //=========== PIN CONFIGURATION TO NODEMCU ===========
-const String hardwareID = "92EC9416";
+const String hardwareID = "FYF2U734";
 const int soilmoisturePin = A0;
 const int waterflowsensorPin = 13; // variable for D7/GPIO Pin 13
 //====================================================
