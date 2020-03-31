@@ -12,6 +12,23 @@ SARIBO contains two modules:
 
 See the official stable version @ **[Official Stable Release SARIBO version 1.2.7](https://github.com/rjargumido/SARIBO/releases/tag/v.1.2.7)**
 
+# Pin Configuration
+
+**Leaf Pin Configuration:**
+
+| Label | Pin | Part |
+| ------------- | ------------- | ------------- |
+| VCC | VCC/VIN | All with VCC/VIN 5VDC+ |
+| GND | Gnd | Ground Pin |
+| A0 | A0, Analog | Soil Moisture Sensor |
+| SCL | D1/GPIO 5 | RTC Module |
+| SDA | D2/GPIO 4, PWM | RTC Module |
+| CS | D8/GPIO 15, PWM | SD Card |
+| SCK | D5/GPIO 14, PWM | SD Card |
+| MOSI | D7/GPIO 13 | SD Card |
+| MISO | D6/GPIO 12, PWM | SD Card |
+
+
 # Root Diagram
 
 ![Root Fritzing Diagram](https://github.com/rjargumido/SARIBO/blob/master/Fritzing/Root%20Diagram.png)
@@ -57,7 +74,7 @@ The following are the **software requirements for SARIBO**:
 # File Structuring Standard
 The SARIBO modules strictly follow file structuring schemes:
 
-**Leaf File Structuring**
+**Leaf File Structuring:**
 
     FileSystem:
     |
@@ -75,7 +92,7 @@ The SARIBO modules strictly follow file structuring schemes:
     |   +---SysConfig.txt
 
 
-**Root File Structuring**
+**Root File Structuring:**
 
     FileSystem:
     |
@@ -109,11 +126,10 @@ The Data Exchange Standard (DES) is used as the core data exchange, transfer and
 1. **Data Exchange Table** Is a table that is being used to consolidate relevant real-time data to be used in the exchange between the Leaf and the Root modules or vice versa.
 2. **Requests** Are 2-digit integer code used for determining what type of request is being sent or data to be send.
 
-# Requests
-
+**Requests**
 The following are the request codes under Request Code Table v2.1 revision March 31, 2020:
 
-| Request Code  | Description |
+| **Request Code**  | **Description** |
 | ------------- | ------------- |
 | 10 | Soil moisture reading only |
 | 11 | Leaf Distribution Line, Open |
@@ -129,10 +145,10 @@ The following are the request codes under Request Code Table v2.1 revision March
 | 62 | Pull Leaf Settings |
 | 71 | Request for a Hardware ID |
 
-# Data Exchange Table
+**Data Exchange Table**
 The following is the table structure used under Data Exchange Table v2.2 revision March 31, 2020:
 
-| Data  | Description |
+| **Data**  | **Description** |
 | ------------- | ------------- |
 | origin | The Hardware ID of the requesting module |
 | destination | The Hardware ID of the destination module of the request |
@@ -162,7 +178,7 @@ Example:
 The above Data Exchange Table returns a string value of:
 *{"origin":"HC7E9701","destination":"RBF0928J","datesent":"April+1,+2020","timesent":7:02:09+AM","request":11,"value":892"}*
 
-The following followwing String value complies with the ArduinoJson object [*see: <ArduinoJson.h> ArduinoJson Library version 6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and the HTTP URL/URI standards.
+The following String value complies with the ArduinoJson [*see: ArduinoJson Library version 6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and the HTTP URL/URI standards.
 
 
 # Hardware ID Management Service (HIMS)
@@ -170,7 +186,7 @@ The Hardware ID Management Service (HIMS) is the core function that process the 
 
 **HIDs are 8 pseudo-random generated alphanumeric codes used to name modules for easier network data exchange.*** HIMS serves as the central registration authority of hardware Ids within a specific SARIBO network and ensures that generated HIDs only belongs to the network, and are uniquely generated.
 
-# The Generate Hardware ID Algorithm
+**The Generate Hardware ID Algorithm**
 The following is the algorithm used in generating HIDs:
 
 1. To create a psuedo-random number, the randomSeed() in the setup() function is placed
