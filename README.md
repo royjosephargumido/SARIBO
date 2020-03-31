@@ -12,6 +12,7 @@ SARIBO contains two modules:
 
 See the official stable version @ **[Official Stable Release SARIBO version 1.2.7](https://github.com/rjargumido/SARIBO/releases/tag/v.1.2.7)**
 
+
 # Pin Configuration
 
 **Leaf Pin Configuration:**
@@ -55,9 +56,9 @@ The following are the hardware requirements for SARIBO:
 
 
 # Software Requirements
-The following are the **software requirements for SARIBO**:
+The following are the software requirements for SARIBO:
 
-| Software | Specification | Description |
+| **Software** | **Specification** | **Description** |
 | ------------- | ------------- | ------------- |
 | Arduino IDE | Version 1.8.10 | Serves as the Integrated Development Environment (IDE) of the Arduino wherein codes during the development are written using the software. |
 | ArduinoJSON Library for Arduino | Built using [<ArduinoJson.h> ArduinoJson Library version 6.14.1 by Benoit Blanchon](https://github.com/bblanchon/ArduinoJson). | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
@@ -142,13 +143,14 @@ The SARIBO modules strictly follow file structuring schemes:
 
 # Data Exchange Standard (DES)
 
-The Data Exchange Standard (DES) is used as the core data exchange, transfer, response, and processing rules used to ensure that the data is being processed the same way throughout the system. It is further divided into three:
+The Data Exchange Standard (DES) is used as the core data exchange, transfer, response, and processing rules used to ensure that the data is being processed the same way throughout the system. It is further divided into five:
 
 1. **Data Exchange Standard Guidelines** Is the set of rules and guidelines for the Data Exchange Standard.
 2. **Exchange Table** Is the table used in exchanging requests and responses in the network.
 3. **Requests Code** Are 2-digit integer code used for determining what type of request is being sent or data to be send.
 4. **Request** Is the table used in a request.
 5. **Response** Is a table used in response to a request.
+
 
 
 **1. Data Exchange Standard Guidelines**
@@ -235,6 +237,7 @@ The above request generates a string value of:
 
 
 # Hardware ID Management Service (HIMS)
+
 The Hardware ID Management Service (HIMS) is the core function that process the naming of modules *(giving of hardware Id)*, and the decoding of HIDs present in the Data Exchange Table for the processing of requests.
 
 **HIDs are 8 pseudo-random generated alphanumeric codes used to name modules for easier network data exchange.*** HIMS serves as the central registration authority of hardware Ids within a specific SARIBO network and ensures that generated HIDs only belongs to the network, and are uniquely generated.
@@ -248,3 +251,26 @@ The following is the algorithm used in generating HIDs:
 4. Return the character array as a String
 
 The source code for the generation of hardware id is here at [Generate Hardware Id](https://github.com/rjargumido/SARIBO/blob/master/Individual%20Systems/generateHardwareID/generateHardwareID.ino).
+
+
+# Soil Moisture Reading Guidelines
+The following is the algorithm employed in reading and processing of the soil moisture:
+
+**1.** Read the soil moisture value once every second for one minute for accuracy and save it in a *long int* data type variable.
+
+**2.** After 1 minute, compute the final soil moisture value and divide it by 60.
+
+**3.** Load user soil moisture level configuration such as the *maxsoildryness*, *minsoildryness* and the *idealsoilmoist* values from SD card.
+
+**4.** Perform additional processes based on the following:
+
+   **a.** When the **final soil moisture is above the maximum soil dryness**, repeat reading of the soil moisture. ***Go to step 1***;
+   **b.** When the **final soil moisture is between the maximum soil dryness and the minimum soil dryness** (*means that the soil is dry*), trigger the **OPEN distribution request**, ***Go to step 5***;
+   **c.** When the **final soil moisture is between the minimum soil dryness and the ideal soil moisture** (*means that the soil is in the ideal soil moisture*),:
+          **c.1.** Check if there is already a sent open distribution line request, if true, ***Go to step 6***, else, trigger the **Soil Moisture Reporting Only**;
+
+**5.** After 4 minutes from the *OPEN distribution request*, ***repeat steps 1-4***;
+
+**6.** Send **CLOSE distribution request**;
+
+***Note:*** Always create a high verbosity log.
