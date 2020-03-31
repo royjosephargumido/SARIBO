@@ -1,4 +1,3 @@
-  
 /*
   The S.A.R.I.B.O. Root Module - NodeMCU 12E esp8266 Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
