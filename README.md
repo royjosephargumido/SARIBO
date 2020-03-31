@@ -1,6 +1,6 @@
 # SARIBO
   
-**SARIBO** or ***Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations** is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using ESP8266 NodeMCU 12E v3 (LoLin). SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
+**SARIBO** or ***Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations*** is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using ESP8266 NodeMCU 12E v3 (LoLin). SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
 
 SARIBO contains two modules:
 
