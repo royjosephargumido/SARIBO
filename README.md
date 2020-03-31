@@ -114,3 +114,54 @@ The above Data Exchange Table returns a string value of:
 *{"origin":"HC7E9701","destination":"RBF0928J","datesent":"April+1,+2020","timesent":7:02:09+AM","request":11,"value":892"}*
 
 The following followwing String value complies with the ArduinoJson object [*see: <ArduinoJson.h> ArduinoJson Library version 6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and the HTTP URL/URI standards.
+
+
+# Hardware ID Management Service (HIMS)
+The Hardware ID Management Service (HIMS) is the core function that process the naming of modules *(giving of hardware Id)*, and the decoding of HIDs present in the Data Exchange Table for the processing of requests.
+
+**HIDs are 8 pseudo-random generated alphanumeric codes used to name modules for easier network data exchange.*** HIMS serves as the central registration authority of hardware Ids within a specific SARIBO network and ensures that generated HIDs only belongs to the network, and are uniquely generated.
+
+# The Generate Hardware ID Algorithm
+The following is the algorithm used in generating HIDs:
+
+1. To create a psuedo-random number, the randomSeed() in the setup() function is placed
+2. Randomize between 0 & 1. If value is 1 store a psuedo-random uppercase alphabet character, otherwise a psuedo-random numeric character.
+3. Repeat step #2 until 8 alphanumeric characters are generated.
+4. Return the character array as a String
+
+Source Code
+-----------------------------------------------------------
+```
+String generateHID() {
+  char HID[8]; //Container for the generated character
+  
+  for(int i = 0; i < 8; i++){
+    if(random(2) == 1)  //Randomizes between 0 & 1
+      HID[i] = random(65, 90);  //1 means alphabet character
+    else  //0 means a numeric character
+      HID[i] = random(48, 57);
+  }
+  //Adds the terminating character in the last position of the char array
+  HID[8] = '\0';
+  
+  return HID;
+}
+
+void setup() {
+   Serial.begin(115200);
+   /*
+    * If the analog input pin 0 is unconnected, random analog
+    * noise will cause the call to randomSeed() to generate
+    * different seed numbers each time the sketch runs.
+    * randomSeed() will then shuffle the random function.
+    */
+   randomSeed(analogRead(0));
+}
+
+void loop() {
+  //Generates a Hardware ID every 1 second
+  Serial.print("Hardware ID: ");  
+  Serial.println(generateHID());
+  delay(1000);
+}
+```
