@@ -1,0 +1,50 @@
+DATA LOGGING STANDARD
+Version 1.1, Revision March 17, 2020
+-----------------------------------------------------------
+
+
+File Structuring (Leaf):
+-----------------------------------------------------------
+Core/
+  |
+  +--- "Source Codes for the Leaf Module"
+Documentation/
+  |
+  +--- SARIBO User Manual.txt
+Logs/
+  |
+  +--- POST/
+  |
+  +--- Error Reporting/
+System/
+  |
+  +---
+
+
+Where:
+ 
+Core: Contains all source code for the specific module.
+Documentation: Contains the SARIBO Technical Manual and SARIBO ENd User Manual
+Logs: Contains all logs made
+POST: All Power On, Self Test Logs ONLY
+Error Reporting: Error Reporting Logs ONLY
+System: System Configurations
+-----------------------------------------------------------
+
+
+Standard Service Header:
+-----------------------------------------------------------
+
+SARIBO REPORTING SERVICE
+Version 2.2, Revision March 17, 2020
+**************************************************
+<reporting_service_log_type Log
+<directory/filename>
+
+SARIBO <hardware_id>
+
+<date_created_in_MMMM dd, YYYY_format>
+<time_created_in_HH:mm:ss_format>
+**************************************************
+Starting <test_function>...
+-----------------------------------------------------------

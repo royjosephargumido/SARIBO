@@ -1,0 +1,66 @@
+NRF240L
+
+CE	YELLOW	D8
+SCK	GREEN	D13
+MISO	PURPLE	D12
+CSN	ORANGE	D8
+MOSI	BLUE	D11
+
+
+ROOT NANO
+
+A0	
+A1
+A2
+A3
+A4	RTC	SDA
+A5	RTC	SCL
+A6
+A7
+
+D2	RELAY 1
+D3	SD	CS
+D4	RELAY 2
+D5	SR	RCLK
+D6	SR	SRCLK
+D7	RELAY 3
+D8	RELAY 4
+D9	US	TRIG
+D10	US	ECHO
+D11	SD	MOSI
+D12	SD	MISO
+D13	SD	SCK
+
+
+ROOT NODEMCU
+
+D1	Relay 1	Pump
+D5	Relay 2	Main Valve
+D6	Relay 3 Refill Valve
+D8	Relay 4 Discharge Valve
+
+
+
+LEAF
+
+A0	SM	A0	Soil Moisture
+A1
+A2
+A3
+A4	RTC	SDA	Real time Clock
+A5	RTC	SCL	Real time Clock
+A6
+A7
+
+D2	WF		Water Flow sensor
+D3	SD	CS	SD Card module
+D4
+D5
+D6
+D7
+D8	
+D9
+D10
+D11	SD	MOSI	SD Card module
+D12	SD	MISO	SD Card module
+D13	SD	SCK	SD Card module
