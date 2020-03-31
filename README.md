@@ -129,39 +129,4 @@ The following is the algorithm used in generating HIDs:
 3. Repeat step #2 until 8 alphanumeric characters are generated.
 4. Return the character array as a String
 
-Source Code
------------------------------------------------------------
-```
-String generateHID() {
-  char HID[8]; //Container for the generated character
-  
-  for(int i = 0; i < 8; i++){
-    if(random(2) == 1)  //Randomizes between 0 & 1
-      HID[i] = random(65, 90);  //1 means alphabet character
-    else  //0 means a numeric character
-      HID[i] = random(48, 57);
-  }
-  //Adds the terminating character in the last position of the char array
-  HID[8] = '\0';
-  
-  return HID;
-}
-
-void setup() {
-   Serial.begin(115200);
-   /*
-    * If the analog input pin 0 is unconnected, random analog
-    * noise will cause the call to randomSeed() to generate
-    * different seed numbers each time the sketch runs.
-    * randomSeed() will then shuffle the random function.
-    */
-   randomSeed(analogRead(0));
-}
-
-void loop() {
-  //Generates a Hardware ID every 1 second
-  Serial.print("Hardware ID: ");  
-  Serial.println(generateHID());
-  delay(1000);
-}
-```
+The source code for the generation of hardware id is here at [Generate Hardware Id](https://github.com/rjargumido/SARIBO/blob/master/Individual%20Systems/generateHardwareID/generateHardwareID.ino).
