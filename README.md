@@ -77,20 +77,19 @@ SARIBO does not implement any database management systems (DBMS) in managing its
 * **Leaf Settings**
 The following is the data table used in settings:
 
-| Data | Description |
-| ------------- | ------------- |
-| localhid | The Leaf's HID |
-| roothid | The Root's HID |
-| ssid | SARIBO WiFi Access Point |
-| key | WAP Password |
-| host | Host IP Address |
-| urlpath | URL Path |
-| port | Port where requests is to be sent. |
-| wakeuptime | The time when the Leaf module should wake up. |
-| maxdryness | Maximum soil dryness |
-| mindryness | Minimum soil dryness |
-| idealmoist | Ideal soil moisture |
-
+| Data | Description | Sample Value | Data Type |
+| ------------- | ------------- | ------------- | ------------- |
+| localhid | The Leaf's HID | 2J41F7FQ | String |
+| roothid | The Root's HID | HSDOSSUR| String |
+| ssid | SARIBO WiFi Access Point | SARIBO - NwSSU | String |
+| key | WAP Password | 123456789 | String |
+| host | Host IP Address | 192.168.4.1 | String |
+| urlpath | URL Path | /requests/?data= | String |
+| port | Port where requests is to be sent. | 80 | Integer |
+| wakeuptime | The time when the Leaf module should wake up. | 6:00:00 | String
+| maxdryness | Maximum soil dryness | 1001 | Integer |
+| mindryness | Minimum soil dryness | 600 | Integer |
+| idealmoist | Ideal soil moisture | 450 | Integer |
 
 
 # File Structuring Standard
