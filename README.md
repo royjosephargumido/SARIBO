@@ -1,4 +1,4 @@
-# SARIBO
+# Overview
   
 **SARIBO** or ***Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations*** is an internet-of-things (IOT) Irrigation System designed for Backyard Farming created using ESP8266 NodeMCU 12E v3 (LoLin). SARIBO is a waray-waray (Waray) term for "to water" especially for plants.
 
@@ -71,6 +71,28 @@ The following are the **software requirements for SARIBO**:
 | ESP8266 Web Server Library for ESP8266 NodeMCU | <ESP8266WebServer.h> Copyright (c) 2014 Ivan Grokhotkov. Provided in the esp8266 Arduino board. | This provides the network router or the web server that serves as the address or the routes wherein date could be sent or retrieved. |
 
 
+# Data Management Service
+SARIBO does not implement any database management systems (DBMS) in managing its data. Data are managed through the use of [*ArduinoJson Library v6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and saving it in a plain text file (.txt).
+
+* **Leaf Settings**
+The following is the data table used in settings:
+
+| Data | Description |
+| ------------- | ------------- |
+| localhid | The Leaf's HID |
+| roothid | The Root's HID |
+| ssid | SARIBO WiFi Access Point |
+| key | WAP Password |
+| host | Host IP Address |
+| urlpath | URL Path |
+| port | Port where requests is to be sent. |
+| wakeuptime | The time when the Leaf module should wake up. |
+| maxdryness | Maximum soil dryness |
+| mindryness | Minimum soil dryness |
+| idealmoist | Ideal soil moisture |
+
+
+
 # File Structuring Standard
 The SARIBO modules strictly follow file structuring schemes:
 
@@ -88,8 +110,8 @@ The SARIBO modules strictly follow file structuring schemes:
     |   |
     |   +--- POST
     +---System
-    |   |
-    |   +---SysConfig.txt
+        |
+        +---SysConfig.txt
 
 
 **Root File Structuring:**
@@ -113,10 +135,10 @@ The SARIBO modules strictly follow file structuring schemes:
     |    |
     |    +--- POST
     +---System
-    |    |
-    |    +--- Resources
-    |    |
-    |    +---SysConfig.txt
+         |
+         +--- Resources
+         |
+         +---SysConfig.txt
 
 
 # Data Exchange Standard (DES)
