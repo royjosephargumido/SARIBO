@@ -54,6 +54,54 @@ The following are the **software requirements for SARIBO**:
 | ESP8266 Web Server Library for ESP8266 NodeMCU | <ESP8266WebServer.h> Copyright (c) 2014 Ivan Grokhotkov. Provided in the esp8266 Arduino board. | This provides the network router or the web server that serves as the address or the routes wherein date could be sent or retrieved. |
 
 
+# File Structuring Standard
+The SARIBO modules strictly follow file structuring schemes:
+
+**Leaf File Structuring**
+
+FileSystem:
+|
++---Core
+|   |
+|   +--- "Source Codes for the Leaf Module"
++---Documentation
+|   |
+|   +--- SARIBO User Manual.pdf
++---Logs
+|   |
+|   +--- POST
++---System
+|   |
+|   +---SysConfig.txt
+
+
+**Root File Structuring**
+
+FileSystem:
+|
++---Core
+|   |
+|   +--- "Source Codes for the Leaf and Root Modules"
++---Documentation
+|   |
+|   +--- SARIBO User Manual.pdf
++---Leaf
+|   |
+|   +---"Leaf's Hardware Id"
+|       |
+|       +--- Configuration
+|       |
+|       +--- POST
++---Logs
+|   |
+|   +--- POST
++---System
+|   |
+|   +--- Resources
+|   |
+|   +---SysConfig.txt
+
+
 # Data Exchange Standard (DES)
 
 The Data Exchange Standard (DES) is used as the core data exchange, transfer and processing rules used to ensure that the data is being processed the same way throughout the system. It is further divided into two:
