@@ -16,7 +16,7 @@ See the official stable version @ **[Official Stable Release SARIBO version 1.2.
 
 **Leaf Pin Configuration:**
 
-| Label | Pin | Part |
+| **Label** | **Pin** | **Part** |
 | ------------- | ------------- | ------------- |
 | VCC | VCC/VIN | All with VCC/VIN 5VDC+ |
 | GND | Gnd | Ground Pin |
@@ -39,12 +39,11 @@ See the official stable version @ **[Official Stable Release SARIBO version 1.2.
 
 
 # Hardware Requirements
+The following are the hardware requirements for SARIBO:
 
-The following are the **hardware requirements for SARIBO**:
-
-| Hardware  | Description |
+| **Hardware** | **Description** |
 | ------------- | ------------- |
-| NodeMCU V3 ESP8266 ESP-12E  | The micro controller unit (MCU) responsible in the establishment, control, management, of the Wi-Fi communication functionality of the system.  |
+| NodeMCU V3 ESP8266 ESP-12E (LoLin)  | Serves as the micro controller unit (MCU) that performs the functionality of the system. |
 | 12V DC Plastic Solenoid Water Valve (Normally Closed) 1/2"| Used in opening individual Leaf Distribution Lines. |
 | Plastic Water Flow Sensor 1/2" | Used to determine the water flow rate. |
 | MicroSD Card Reader Module | Data logging functions. |
@@ -52,10 +51,10 @@ The following are the **hardware requirements for SARIBO**:
 | DS3231 RTC Real Time Clock and EEPROM AT24C32 Module | Provides the date and time functionalities. |
 | HC-SR04 Ultrasonic Ranging Sensor | Used in determining the water level in the tank/reservoir.  |
 | Soil Moisture Sensor Module | Used in determining the soil moisture level. |
+| 74HC595 Shift-Out Register | Additional output pins. |
 
 
 # Software Requirements
-
 The following are the **software requirements for SARIBO**:
 
 | Software | Specification | Description |
@@ -63,7 +62,7 @@ The following are the **software requirements for SARIBO**:
 | Arduino IDE | Version 1.8.10 | Serves as the Integrated Development Environment (IDE) of the Arduino wherein codes during the development are written using the software. |
 | ArduinoJSON Library for Arduino | Built using [<ArduinoJson.h> ArduinoJson Library version 6.14.1 by Benoit Blanchon](https://github.com/bblanchon/ArduinoJson). | An Arduino library used as the parser/decoder (serializer/deserializer) of data of the system that will be sent via the Wi-Fi communication of the modules of the system. |
 | SD Library for Arduino | Built using [<SD.h> SD Library version 1.2.4 by Arduino.cc and SparkFun](https://www.arduino.cc/en/Reference/SD). | An Arduino library used for the data logging purposes. |
-| Software Serial Library for Arduino | <SoftwareSerial.h> Included in the Arduino Core libraries using the [Software Serial Library](http://arduiniana.org/libraries/newsoftserial/) | Provides the functionality for the software serial communication between the Arduino Nano and the ESP8288 NodeMCU Wi-Fi Module. |
+| SPI Library for Arduino | Built using [<SPI.h> Serial Peripheral Interface Library by Arduino](https://www.arduino.cc/en/Reference/SPI). | An Arduino library used for transferring data between microcontrollers and other small devices. |
 | Real Time Clock (RTC) Library for Arduino | [<RTClib.h> Version 1.3.3 by AdaFruit](https://github.com/adafruit/RTClib) | Provides the functionality for the setting and accessing of date and time. |
 | HCSR04 Ultrasonic Ranging Sensor Library for Arduino | Built using [<HCSR04.h> version 2.0.2 by gamegine](https://github.com/gamegine/HCSR04-ultrasonic-sensor-lib). | Provides the functionality for the control and use of the HCSR04 Ultrasonic Ranging Sensor Module used in determining the water level in the tank. |
 | ESP8266 Board for Arduino | Version 2.6.3 by the ESP8266 Community [ESP8266 Libraries](https://github.com/esp8266/Arduino) and [ESP8266 Board](http://arduino.esp8266.com/stable/package_esp8266com_index.json). | Provides the Wi-Fi communication and Web Server functionality. |
@@ -74,10 +73,10 @@ The following are the **software requirements for SARIBO**:
 # Data Management Service
 SARIBO does not implement any database management systems (DBMS) in managing its data. Data are managed through the use of [*ArduinoJson Library v6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and saving it in a plain text file (.txt).
 
-* **Leaf Settings**
+**Leaf Settings**
 The following is the data table used in settings:
 
-| Data | Description | Sample Value | Data Type |
+| **Data** | **Description** | **Sample Value** | **Data Type** |
 | ------------- | ------------- | ------------- | ------------- |
 | localhid | The Leaf's HID | 2J41F7FQ | String |
 | roothid | The Root's HID | HSDOSSUR| String |
@@ -140,19 +139,51 @@ The SARIBO modules strictly follow file structuring schemes:
          +---SysConfig.txt
 
 
+
 # Data Exchange Standard (DES)
 
-The Data Exchange Standard (DES) is used as the core data exchange, transfer and processing rules used to ensure that the data is being processed the same way throughout the system. It is further divided into two:
+The Data Exchange Standard (DES) is used as the core data exchange, transfer, response, and processing rules used to ensure that the data is being processed the same way throughout the system. It is further divided into three:
 
-1. **Data Exchange Table** Is a table that is being used to consolidate relevant real-time data to be used in the exchange between the Leaf and the Root modules or vice versa.
-2. **Requests** Are 2-digit integer code used for determining what type of request is being sent or data to be send.
+1. **Data Exchange Standard Guidelines** Is the set of rules and guidelines for the Data Exchange Standard.
+2. **Exchange Table** Is the table used in exchanging requests and responses in the network.
+3. **Requests Code** Are 2-digit integer code used for determining what type of request is being sent or data to be send.
+4. **Request** Is the table used in a request.
+5. **Response** Is a table used in response to a request.
 
-**Requests**
+
+**1. Data Exchange Standard Guidelines**
+
+1. ***For every request, there should be a response.***
+2. The Transaction Id has the format of: *leafHID-YYYYMMMDD-HHMMSS* e.g. HC7E9701-2020Apr1-70209
+3. Hardware Ids should comply with the Hardware ID Management Service (HIMS).
+4. The Date object is in the format: MMMM dd, YYYY e.g. April 1, 2020 without the zero padding in the day object.
+5. The Time object is in the format: hh:mm:ss SS e.g. 7:02:09 AM with the zero padding on both minute and second objects only.
+6. Request codes complies with the recent Request Code Table under the Data Exchange Standard.
+7. For ****requests only***, all space characters ' ' should always be replaced with the plus character '+' for URI/URL compliance.
+
+
+**2. Exchange Table**
+The Exchange Table is the standard table used in exchanging requests and responses in the network.
+Exchange Table v2.3 revision April 1, 2020
+
+
+| **Data**  | **Description** | **Data Type** |
+| ------------- | ------------- | ------------- |
+| transid | the Transaction Id signed by the Requesting module | String |
+| origin | The Hardware ID of the requesting module | String |
+| destination | The Hardware ID of the destination module of the request | String |
+| datesent | The current date of the requesting module | String |
+| timesent | The current time of the requesting module | String |
+| request | The request code | Integer |
+| value | The value being exchange as a validation/required data | String |
+
+
+**3. Requests Code**
 The following are the request codes under Request Code Table v2.1 revision March 31, 2020:
 
 | **Request Code**  | **Description** |
 | ------------- | ------------- |
-| 10 | Soil moisture reading only |
+| 10 | General Leaf Distribution Line Response |
 | 11 | Leaf Distribution Line, Open |
 | 12 | Leaf Distribution Line, Close |
 | 20 | Get Leaf Water Flow Rate Reading |
@@ -164,31 +195,16 @@ The following are the request codes under Request Code Table v2.1 revision March
 | 51 | Ping Request |
 | 61 | Pull Root Settings |
 | 62 | Pull Leaf Settings |
-| 71 | Request for a Hardware ID |
+| 71 | Soil moisture reading only |
+| 72 | Request for a Hardware ID |
 
-**Data Exchange Table**
-The following is the table structure used under Data Exchange Table v2.2 revision March 31, 2020:
 
-| **Data**  | **Description** |
+**4. Request**
+The following is a sample request:
+
+| **Data** | **Content** |
 | ------------- | ------------- |
-| origin | The Hardware ID of the requesting module |
-| destination | The Hardware ID of the destination module of the request |
-| datesent | The current date of the requesting module |
-| timesent | The current time of the requesting module |
-| request | The request code |
-| value | The value being exchange as a validation/required data |
-
-
-Note:
-* Complies with the Hardware Id nomenclature Algorithm found at the Root Hardware ID Management Service (HIMS).
-* The Date object is in the format: MMMM dd, YYYY e.g. April 1, 2020 without the zero padding in the day object.
-* The Time object is in the format: hh:mm:ss SS e.g. 7:02:09 AM with the zero padding on both minute and second objects only.
-* Request codes complies with the recent Request Code Table under the Data Exchange Standard.
-
-
-Example:
-| Data | Content |
-| ------------- | ------------- |
+| transid | HC7E9701-2020Apr1-70209 |
 | origin | HC7E9701 |
 | destination | RBF0928J |
 | datesent | April 1, 2020 |
@@ -196,10 +212,26 @@ Example:
 | request | 11 |
 | value | 892 |
 
-The above Data Exchange Table returns a string value of:
-*{"origin":"HC7E9701","destination":"RBF0928J","datesent":"April+1,+2020","timesent":7:02:09+AM","request":11,"value":892"}*
+The above request generates a string value of:
+*{"transid":"HC7E9701-2020Apr1-70209","origin":"HC7E9701","destination":"RBF0928J","datesent":"April+1,+2020","timesent":7:02:09+AM","request":11,"value":892"}*
 
-The following String value complies with the ArduinoJson [*see: ArduinoJson Library version 6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and the HTTP URL/URI standards.
+
+**5. Response**
+The following is a sample response to the above sample request:
+
+| **Data** | **Content** |
+| ------------- | ------------- |
+| transid | HC7E9701-2020Apr1-70209 |
+| origin | RBF0928J |
+| destination | HC7E9701 |
+| datesent | April 1, 2020 |
+| timesent | 7:02:48 AM |
+| request | 10 |
+| value | Leaf01 Open Distribution Line request approved. |
+
+The above request generates a string value of:
+*{"transid":"HC7E9701-2020Apr1-70209","origin":"RBF0928J","destination":"HC7E9701","datesent":"April 1, 2020","timesent":7:02:48 AM","request":10,"value":"Leaf01 Open Distribution Line request approved."}*
+
 
 
 # Hardware ID Management Service (HIMS)
