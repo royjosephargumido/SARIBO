@@ -59,49 +59,47 @@ The SARIBO modules strictly follow file structuring schemes:
 
 **Leaf File Structuring**
 
-FileSystem:
-|
-+---Core
-
-
+    FileSystem:
     |
-    +--- "Source Codes for the Leaf Module"
-+---Documentation
-    |
-    +--- SARIBO User Manual.pdf
-+---Logs
-    |
-    +--- POST
-+---System
-    |
-    +---SysConfig.txt
+    +---Core
+    |   |
+    |   +--- "Source Codes for the Leaf Module"
+    +---Documentation
+    |   |
+    |   +--- SARIBO User Manual.pdf
+    +---Logs
+    |   |
+    |   +--- POST
+    +---System
+    |   |
+    |   +---SysConfig.txt
 
 
 **Root File Structuring**
 
-FileSystem:
-|
-+---Core
+    FileSystem:
     |
-    +--- "Source Codes for the Leaf and Root Modules"
-+---Documentation
-    |
-    +--- SARIBO User Manual.pdf
-+---Leaf
-    |
-    +---"Leaf's Hardware Id"
-        |
-        +--- Configuration
-        |
-        +--- POST
-+---Logs
-    |
-    +--- POST
-+---System
-    |
-    +--- Resources
-    |
-    +---SysConfig.txt
+    +---Core
+    |    |
+    |    +--- "Source Codes for the Leaf and Root Modules"
+    +---Documentation
+    |    |
+    |    +--- SARIBO User Manual.pdf
+    +---Leaf
+    |    |
+    |    +---"Leaf's Hardware Id"
+    |        |
+    |        +--- Configuration
+    |        |
+    |        +--- POST
+    +---Logs
+    |    |
+    |    +--- POST
+    +---System
+    |    |
+    |    +--- Resources
+    |    |
+    |    +---SysConfig.txt
 
 
 # Data Exchange Standard (DES)
