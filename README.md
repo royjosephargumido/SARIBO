@@ -137,6 +137,8 @@ The SARIBO modules strictly follow file structuring schemes:
          |
          +--- Resources
          |
+         +---HID.txt
+         |
          +---SysConfig.txt
 
 
