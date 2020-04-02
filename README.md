@@ -10,7 +10,7 @@ SARIBO contains two modules:
 
 # Stable Version
 
-See the official stable version @ **[Official Stable Release SARIBO version 1.2.7](https://github.com/rjargumido/SARIBO/releases/tag/v.1.2.7)**
+See the official stable version @ **[Official Stable Release SARIBO version 1.2.7](https://github.com/rjargumido/SARIBO/releases/tag/v.1.2.7)** Source codes for the module are available at the "*Releases*" folder.
 
 
 # Pin Configuration
@@ -79,6 +79,7 @@ The following is the data table used in settings:
 
 | **Data** | **Description** | **Sample Value** | **Data Type** |
 | ------------- | ------------- | ------------- | ------------- |
+| content | The type of data stored. | SETTINGS | String |
 | localhid | The Leaf's HID | 2J41F7FQ | String |
 | roothid | The Root's HID | HSDOSSUR| String |
 | ssid | SARIBO WiFi Access Point | SARIBO - NwSSU | String |
@@ -140,6 +141,10 @@ The SARIBO modules strictly follow file structuring schemes:
          +---HID.txt
          |
          +---SysConfig.txt
+
+**Note:**
+1. ***HID.txt*** contains all Hardware Ids in the network. Database of Hardware Ids.
+2. ***SysConfig.txt*** or the system configuration database contains all the settings of the Root module.
 
 
 
