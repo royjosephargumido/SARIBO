@@ -79,7 +79,6 @@ The following is the data table used in settings:
 
 | **Data** | **Description** | **Sample Value** | **Data Type** |
 | ------------- | ------------- | ------------- | ------------- |
-| content | The type of data stored. | SETTINGS | String |
 | localhid | The Leaf's HID | 2J41F7FQ | String |
 | roothid | The Root's HID | HSDOSSUR| String |
 | ssid | SARIBO WiFi Access Point | SARIBO - NwSSU | String |
@@ -91,6 +90,8 @@ The following is the data table used in settings:
 | maxdryness | Maximum soil dryness | 1001 | Integer |
 | mindryness | Minimum soil dryness | 600 | Integer |
 | idealmoist | Ideal soil moisture | 450 | Integer |
+| clearance | The gap between the ranging sensor to the maximum water level. | 3 | Integer |
+| fulltank | The maximum water level capacity of the water tank. | 450 | Integer |
 
 
 # File Structuring Standard
