@@ -119,8 +119,6 @@ void initRTC() {
     Serial.println("RTC lost power, lets set the time!");
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
-  now = rtc.now();
-  randomSeed(now.unixtime());
 
   Serial.println("RTC module running.");
 }
