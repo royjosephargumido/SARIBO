@@ -36,7 +36,7 @@ See the official stable version @ **[Official Stable Release SARIBO version 1.2.
 
 # Leaf Diagram
 
-![Leaf Fritzing Diagram](https://github.com/rjargumido/SARIBO/blob/master/Fritzing/Leaf%20Diagram.png)
+![SARIBO Leaf Diagram (April 5, 2020 Design)](https://github.com/rjargumido/SARIBO/blob/master/Fritzing/SARIBO%20Leaf%20April%205%2C%202020%20Design.png)
 
 
 # Hardware Requirements
