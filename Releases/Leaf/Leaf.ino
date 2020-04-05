@@ -35,24 +35,24 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <SPI.h>
 #include <SD.h>
-#include <ArduinoJson.h>
+#include <SPI.h>
 #include <Wire.h>
 #include <RTClib.h>
+#include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
 
 //================ FUNCTION PROTOTYPING ==============
-void connectToServer();
-void sendrequest(const int rCode, const int value);
 void initRTC();
 void initSD();
-void decodeJsonData(const DeserializationError error);
+void connectToServer();
+void dispData();
 void writeDefaults();
 void loadSettings();
-void dispData();
 void perfSMRead();
 String getDateTime(const int DTReq);
+void sendrequest(const int rCode, const int value);
+void decodeJsonData(const DeserializationError error);
 //====================================================
 
 //================= PIN CONFIGURATION ================
@@ -69,25 +69,23 @@ DeserializationError err;
 //====================================================
 
 //================== GLOBAL VARIABLES ================
+bool rsOpen = false;
+bool stopSMRead = false;
+int times = 1;
+long int smReadings = 0;
 const int count = 10;
 const int maxBuffer = 1000;
-bool stopSMRead = false;
-long int smReadings = 0;
-int times = 1;
-bool rsOpen = false;
 //====================================================
 
 //=================== REQUEST CODES ==================
 const int rDGen = 10;
 const int rOpen = 11;
 const int rClose = 12;
-const int rPower = 30;
-const int rDTRead = 40;
-const int rDTSync = 41;
-const int rPing = 51;
-const int rRoot = 61;
-const int rSoil = 71;
-const int rHID = 72;
+const int rPower = 20;
+const int rDTRead = 30;
+const int rDTSync = 31;
+const int rSoil = 41;
+const int rHID = 42;
 //====================================================
 
 //============== DEFAULT CONFIGURATIONS ==============
@@ -217,14 +215,14 @@ void loadSettings() {
 
   decodeJsonData(deserializeJson(settingsCORE, data));
 
-  globalHID = (const char*)settingsCORE["globalHID"];
-  localHID = (const char*)settingsCORE["localHID"];
-  ssid = (const char*)settingsCORE["ssid"];
-  key = (const char*)settingsCORE["key"];
-  host = (const char*)settingsCORE["host"];
-  urlpath = (const char*)settingsCORE["urlpath"];
+  globalHID = settingsCORE["globalHID"].as<String>();
+  localHID = settingsCORE["localHID"].as<String>();
+  ssid = settingsCORE["ssid"].as<String>();
+  key = settingsCORE["key"].as<String>();
+  host = settingsCORE["host"].as<String>();
+  urlpath = settingsCORE["urlpath"].as<String>();
   port = settingsCORE["port"];
-  wut = (const char*)settingsCORE["wakeuptime"];
+  wut = settingsCORE["wakeuptime"].as<String>();
   maxdryness = settingsCORE["maxdryness"];
   mindryness = settingsCORE["mindryness"];
   idealmoist = settingsCORE["idealmoist"];
@@ -269,14 +267,14 @@ void dispData() {
 void perfSMRead() {
   if(stopSMRead == false) {
     if(times <= count) {
-      int sm = analogRead(sm);
+      int smv = analogRead(sm);
 
       Serial.print("Reading #");
       Serial.print(times);
       Serial.print(": ");
-      Serial.println(sm);
+      Serial.println(smv);
 
-      smReadings += sm;
+      smReadings += smv;
       times++;
       delay(1000);
     }
@@ -351,19 +349,18 @@ void connectToServer() {
 String getDateTime(const int DTReq) {
   now = rtc.now();
   const char monthNames[12][12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
-  String HF = "";
   int h = 0;
+  String HF = "";
   String M = "";
   String d = "";
   String m = "";
   String s = "";
 
-  // COnverting 24H to 12H with AM/PM designation
+  //Converts 24H to 12H with AM/PM designation
   if(now.hour() > 12) {
     h = now.hour() % 12;
     HF = "+PM";
-  }else
-  {
+  }else {
     h = now.hour();
     HF = "+AM";
   }
@@ -388,8 +385,7 @@ String getDateTime(const int DTReq) {
   String Time = (String)h + ':' + (String)m + ':' + (String)s + (String)HF;
   String TId = localHID + now.year() + M + d + now.hour() + m + s;
   
-  switch(DTReq)
-  {
+  switch(DTReq) {
     case 0:
       return Date;
       break;
@@ -399,10 +395,6 @@ String getDateTime(const int DTReq) {
       break;
 
     case 2:
-      return (String)Date + '\n' + (String)Time;
-      break;
-
-    case 3:
       return TId;
       break;
 
@@ -423,7 +415,7 @@ void sendrequest(const int rCode, const int value) {
     Serial.println("). Reconnecting...");
     delay(1000);
   }
-
+  
   const String transid = getDateTime(3);
   const String dsent = getDateTime(0);
   const String tsent = getDateTime(1);
@@ -441,10 +433,9 @@ void sendrequest(const int rCode, const int value) {
   
   unsigned long timeout = millis();
   while(client.available() == 0) {
-    if (millis() - timeout > 5000) {
+    if(millis() - timeout > 5000) {
       Serial.println("Server unreachable. Reconnecting...");
       sendrequest(rCode, value);
-      //client.stop();
       return;
     }
   }
@@ -497,9 +488,9 @@ void setup() {
   }else {
     writeDefaults();
   }
-
+  
   connectToServer();
-
+  
   Serial.println("======== SOIL MOISTURE READING ========");
   for(int i = 1; i <= count; i++)
     perfSMRead();
