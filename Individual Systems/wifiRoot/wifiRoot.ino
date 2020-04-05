@@ -4,7 +4,7 @@
   
   SARIBO WIFI COMMUNICATION STABLE PROTOTYPE - ROOT MODULE
   Compatible to SARIBO Version 1.2.4 and higher
-  Version 1.3 Revision March 21, 2020
+  Version 1.4 Revision April 5, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -36,47 +36,75 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ESP8266WebServer.h>
 #include <ArduinoJson.h>
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
 
-//================= NETWORK PARAMETERS ===============
-const char* ssid = "SARIBO Server - Argumido";
-const char* password = "1234567890";
-const char* host = "192.168.4.1";
-String urlPath = "/requests/";
+//============== DEFAULT CONFIGURATIONS ==============
+const char* __ssid = "SARIBO-SERVER";
+const char* __key = "1234567890";
+const char* __hostIP = "192.168.4.1";
+const int __port = 80;
+const char* __reqPath = "/requests/";
 
-ESP8266WebServer server(80);
-
-DeserializationError err;
-const size_t capacity = JSON_OBJECT_SIZE(5) + 90;
-DynamicJsonDocument requestData(capacity);
-DynamicJsonDocument responseData(capacity);
-String requestPayload = "";
-String responsePayload = "";
+ESP8266WebServer server(__port);
 //====================================================
 
+//============== ARDUINOJSON COMPONENTS ==============
+DeserializationError err;
+
+const size_t capacity = JSON_OBJECT_SIZE(8) + 1000;
+DynamicJsonDocument requestData(capacity);
+DynamicJsonDocument responseData(capacity);
+//====================================================
+
+void initServer() {  
+  Serial.println("Starting Root Server...");
+  
+  WiFi.softAP(__ssid, __key);
+  IPAddress myIP = WiFi.softAPIP();
+  server.on(__reqPath, handleRoot);
+  server.begin();
+  
+  Serial.println("SARIBO Root Server running.");
+  Serial.print("SSID: ");
+  Serial.println(__ssid);
+  Serial.print("IP Address: ");
+  Serial.println(myIP);
+}
+
+void decodeJsonData(const DeserializationError error) {
+  if(error) {
+    Serial.print(F("Unable to decode message! Error: "));
+    Serial.println(error.c_str());
+  }
+}
+
 void handleRoot() {
-  if (server.hasArg("data")) {
-    requestPayload = server.arg(0);
-    Serial.println("Leaf request data recieved.");
-  }
+  String requestPayload = "";
+  String responsePayload = "";
+  
+  if(server.hasArg("data")) { requestPayload = server.arg(0); }
 
-  err = deserializeJson(requestData, requestPayload);
-  if (err) {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(err.c_str());
-  }
-
+  decodeJsonData(deserializeJson(requestData, requestPayload));
+  
+  const char* id = requestData["id"];
   const char* origin = requestData["origin"];
+  const char* destination = requestData["destination"];
   const char* datesent = requestData["datesent"];
   const char* timesent = requestData["timesent"];
   int request = requestData["request"];
   int value = requestData["value"];
 
   Serial.println("============ REQUEST INFORMATION ============");
+  Serial.print("Id: ");
+  Serial.println(id);
+  
   Serial.print("Origin: ");
   Serial.println(origin);
+
+  Serial.print("Destination: ");
+  Serial.println(destination);
   
   Serial.print("Date Sent: ");
   Serial.println(datesent);
@@ -101,30 +129,13 @@ void handleRoot() {
   serializeJson(responseData, responsePayload);
   
   server.send(200, "text/plain", responsePayload);
-  Serial.println("============ RESPONSE INFORMATION ===========");
-  Serial.println(responsePayload);
-  Serial.println("=============================================");
 }
 
 void setup() {
   Serial.begin(115200);
   Serial.println();
   
-  Serial.println("Starting Root Module Server...");
-  WiFi.softAP(ssid, password);
-  IPAddress myIP = WiFi.softAPIP();
-
-  Serial.print("SSID: ");
-  Serial.println(ssid);
-  Serial.print("IP Address: ");
-  Serial.println(myIP);
-  
-  server.on(urlPath, handleRoot);
-  server.begin();
-  Serial.print("SARIBO Root Server @ ");
-  Serial.print(myIP);
-  Serial.println(urlPath);
-  Serial.println("SARIBO Root Server running.");
+  initServer();
 }
 
 void loop() {
