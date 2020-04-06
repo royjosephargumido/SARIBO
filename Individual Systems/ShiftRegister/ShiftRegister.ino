@@ -1,15 +1,8 @@
 /*
   The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  SHIFT REGISTER PROTOTYPE SYSTEM ONLY
-  Revision March 25, 2020
-  Compatible with SARIBO Version 1.2.7
   
-  Note:
-  Attach the data pin/ interrupt pin from the water flow sensor to
-  GPIO 13 or the Digital Pin 7 of the NodeMCU
-  Use digitalPinToInterrupt(pin_number) to get the interrupt pin
-  of the used digital pin for the water flow sensor.
+  SHIFT REGISTER PROTOTYPE SYSTEM ONLY
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -43,118 +36,88 @@
 
 #include <ESP8266WiFi.h>
 
-int SER_Pin = 13;   //pin 14 on the 75HC595
-int RCLK_Pin = 12;  //pin 12 on the 75HC595
-int SRCLK_Pin = 14; //pin 11 on the 75HC595
+//================ FUNCTION PROTOTYPING ==============
+void initRegisters();
+void writeRegisters();
+void setPin(int index, int value);
+int leaf(const int leafNumber, const bool openLine);
+//====================================================
 
-const int numberofRegisters = 2;
+//================= PIN CONFIGURATION ================
+const int SERPin = 13;   //74HC595 Pin 14 | GPIO 13 | D7
+const int RCLKPin = 12;  //74HC595 Pin 12 | GPIO 12 | D6
+const int SRCLKPin = 14; //74HC595 Pin 10 | GPIO 14 | D5
+//====================================================
+
+//=========== SHIFT REGISTER CONFIGURATION ===========
+//-----Change the value if daisy-chaining 74HC595s----
+const int numberofRegisters = 1; 
+//----------------------------------------------------
 const int totalPins = numberofRegisters * 8;
 boolean registers[totalPins];
+//====================================================
 
 void initRegisters() {
-  pinMode(SER_Pin, OUTPUT);
-  pinMode(RCLK_Pin, OUTPUT);
-  pinMode(SRCLK_Pin, OUTPUT);
+  pinMode(SERPin, OUTPUT);
+  pinMode(RCLKPin, OUTPUT);
+  pinMode(SRCLKPin, OUTPUT);
   
   //This clears the registers
-  for(int i = totalPins - 1; i >=  0; i--){
+  for(int i = totalPins - 1; i >=  0; i--)
      registers[i] = HIGH;
-  }
 }
 
-void writeRegisters(){
-  digitalWrite(RCLK_Pin, LOW);
-
-  for(int i = totalPins - 1; i >=  0; i--){
-    digitalWrite(SRCLK_Pin, LOW);
-
-    int val = registers[i];
-
-    digitalWrite(SER_Pin, val);
-    digitalWrite(SRCLK_Pin, HIGH);
-  }
-  digitalWrite(RCLK_Pin, HIGH);
-}
-
-//
-void setPin(int index, int value){
-  /*
-   * Set an individual pin HIGH or LOW
-   */
+void setPin(int index, int value) {
   registers[index] = value;
 }
 
-void pump() {
-  int countOpenLeafLines = 0;
-  for(int i = 8; i < totalPins; i++){
-     if(registers[i] == 0)  // Leaf Distribution Line is OPEN
-      countOpenLeafLines++;
+void writeRegisters() {
+  Serial.print(registers[0]);
+  Serial.print(registers[1]);
+  Serial.print(registers[2]);
+  Serial.print(registers[3]);
+  Serial.print(registers[4]);
+  Serial.print(registers[5]);
+  Serial.print(registers[6]);
+  Serial.println(registers[7]);
+  
+  digitalWrite(RCLKPin, LOW);
+  
+  for(int i = totalPins - 1; i >=  0; i--){
+    digitalWrite(SRCLKPin, LOW);
+    int val = registers[i];
+    digitalWrite(SERPin, val);
+    digitalWrite(SRCLKPin, HIGH);
   }
-  if(countOpenLeafLines == 0) //There is no more open distribution lines
-    setPin(0, HIGH);  //PUMP OFF
-  else
-    setPin(0, LOW);  //PUMP ON
+  digitalWrite(RCLKPin, HIGH);
 }
 
-String leaf(const int leafNumber, const bool openLine) {
-  const int leafPin = leafNumber + 7;
-  String message = "";
-
-  /*  
-   * Checks if the leaf to be open has a
-   * registered pin number in the system
-   * based on the total number of pins available.
-   */
-  if(leafPin < totalPins) {
-    switch(openLine) {
-      case true:  //opens the specific leaf distribution line
-        setPin(leafPin, LOW);
-        message = "Leaf " + (String)leafNumber + " distribution line opened.";
-        break;
-
-      case false:  //opens the specific leaf distribution line
-        setPin(leafPin, HIGH);
-        message = "Leaf " + (String)leafNumber + " distribution line closed.";
-        break;
+int leaf(const int leafNumber, const bool openLine) {
+  if(leafNumber + 2 < totalPins) {
+    if(openLine == true) {
+        setPin(leafNumber + 2, LOW);
+        return 1;
+    }else if(openLine == false) {
+        setPin(leafNumber + 2, HIGH);
+        return 2;
     }
   } else {
-    if(openLine == true)
-      message = "Unable to open Leaf " + (String)leafNumber + " distribution line.\nUnable to reach the Leaf's port number @ " + (String)leafPin + ".";
-    else
-      message = "Unable to close Leaf " + (String)leafNumber + " distribution line.\nUnable to reach the Leaf's port number @ " + (String)leafPin + ".";
+    return 0;
   }
-
-  pump();
-  return message;
 }
 
 void setup(){
+  Serial.begin(115200);
+  delay(3000);
   initRegisters();
 }
 
-void loop(){
+void loop(){  
+  leaf(1, true);
+  writeRegisters(); 
+  delay(1000);
 
-  leaf(2, true);
-  leaf(3, false);
-  leaf(4, false);
-  writeRegisters(); //Display changes
-  delay(2000);
-
-  leaf(2, false);
-  leaf(3, true);
-  leaf(4, false);
+  leaf(1, false);
   writeRegisters();
-  delay(2000);
-
-  leaf(2, false);
-  leaf(3, false);
-  leaf(4, true);
-  writeRegisters();
-  delay(2000);
-
-  leaf(2, false);
-  leaf(3, false);
-  leaf(4, false);
-  writeRegisters();
-  delay(2000);
+  delay(1000);
 }
