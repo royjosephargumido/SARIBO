@@ -1,11 +1,6 @@
 /*
-  The S.A.R.I.B.O. Leaf Module - NodeMCU 12E esp8266 Module Code
-  Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
-  Version 1.02.04 Revision March 18, 2020
-
   SARIBO Date and Time Function
-  Compatible to SARIBO Version 1.02.04 and higher
-  Revision March 18, 2020
+  Revision April 13, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -36,52 +31,33 @@
   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
- 
+
+#include <Wire.h>
 #include <RTClib.h>
 
-//====================================================
-DateTime now;     // Creates a DateTime object
-RTC_DS3231 rtc;   // Creates the RTC object
-
-const char daysOfTheWeek[7][12] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-const char monthNames[127][12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+//================== DEVICE OBJECTS ==================
+DateTime now;
+RTC_DS3231 rtc;
 //====================================================
 
-void setup() {
-  Serial.begin(9600);
-  delay(3000); // wait for console opening
-  
-  if (! rtc.begin()) {
-    Serial.println("Couldn't find RTC");
-    while (1);
+void initRTC() { 
+  while(!rtc.begin()) {
+    Serial.println("Couldn't find the RTC module!");
+    rtcfail++;
+    delay(1000);
   }
-  
-  if (rtc.lostPower()) {
-    Serial.println("RTC lost power, lets set the time!");
-    
-    // Comment out below lines once you set the date & time.
-    // Following line sets the RTC to the date & time this sketch was compiled
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+  if(rtc.lostPower()) {
+    Serial.println("RTC lost power! Synchronizing date and time with server.");
   }
 }
 
-void loop() {
-  DateTime now = rtc.now();
-  
-  String HF = "";
-  int h = 0;
-  String m = "";
-  String s = "";
-
-  // COnverting 24H to 12H with AM/PM designation
-  if(now.hour() > 12) {
-    h = now.hour() % 12;
-    HF = " PM";
-  }else
-  {
-    h = now.hour();
-    HF = " AM";
-  }
+String getDateTime(const int DTReq) {
+  now = rtc.now();
+  const char monthNames[12][12] = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+  String M;
+  String d;
+  String m;
+  String s;
 
   // Adding the '0' Padding to minute if minute is lesser than 10
   if(now.minute() < 10) { m = "0" + (String)now.minute(); }
@@ -90,13 +66,60 @@ void loop() {
   // Adding the '0' Padding to second if second is lesser than 10
   if(now.second() < 10) { s = "0" + (String)now.second(); }
   else { s = (String)now.second(); }
+
+  // Adding the '0' Padding to month if month is lesser than 10
+  if(now.month() < 10) { M = "0" + (String)now.month(); }
+  else { M = (String)now.month(); }
+
+  // Adding the '0' Padding to day if day is lesser than 10
+  if(now.day() < 10) { d = "0" + (String)now.day(); }
+  else { d = (String)now.day(); }
   
-  String Date =  (String)monthNames[now.month()] + ' ' + (String)now.day() + ", " + now.year();
-  String Time = (String)h + ':' + (String)m + ':' + (String)s + HF;
+  switch(DTReq) {
+    case 0: //Time in 24H Format
+      return (String)((String)now.hour() + ":" + m + ":" + s);
+      break;
+
+    case 1: //Date in Normal Format (January 01, 1901)
+      return (String)((String)monthNames[now.month() - 1] + " " + d + ", " + now.year());
+      break;
+
+    case 2: //Date in URL Compliant Format (January+01,+1901)
+      return (String)((String)monthNames[now.month() - 1] + "+" + d + ",+" + now.year());
+      break;
+
+    case 3: //Time in Transaction ID Format (120000) HHmmss
+      return (String)(now.hour() + m + s);
+      break;
+      
+    case 4: //Date in Transaction ID Format (01011901) MMDDYYYY
+      return (String)(M + d + now.year());
+      break;
+  }
+}
+
+void setup() {
+  Serial.begin(9600);
+  delay(3000); // wait for console opening
   
-  Serial.print(Date);
-  Serial.print(' ');
-  Serial.print(Time);
-  Serial.println();
-  delay(1000);
+  initRTC();
+}
+
+void loop() {
+  Serial.print("Time in 24H Format: ");
+  Serial.println(getDateTime(0));
+  
+  Serial.print("Date in Normal Format: ");
+  Serial.println(getDateTime(1));
+  
+  Serial.print("Date in URL Compliant Format: ");
+  Serial.println(getDateTime(2));
+  
+  Serial.print("Time in Transaction ID Format: ");
+  Serial.println(getDateTime(3));
+  
+  Serial.print("Date in Transaction ID Format: ");
+  Serial.println(getDateTime(4));
+  
+  delay(2000);
 }
