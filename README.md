@@ -74,8 +74,23 @@ The following are the software requirements for SARIBO:
 # Data Management Service
 SARIBO does not implement any database management systems (DBMS) in managing its data. Data are managed through the use of [*ArduinoJson Library v6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and saving it in a plain text file (.txt).
 
+**DMS Meta-Data**
+
+| **Data** | **Description** | **Sample Value** | **Data Type** |
+| ------------- | ------------- | ------------- | ------------- |
+| header | What data is stored in the file. | LEAF-SETTINGS | String |
+| dmsversion | What DMS version is used. | 1.2.3 | String |
+| dcreated | The date the file is created in local format. | April 1, 2020 | String |
+| tcreated | The time the file is created in local format. | 16:05:32 | String |
+| owner | Who created the file (user id). | ADMIN04072020160532 | String |
+| dmodified | The date where the file is last modified. | April 1, 2020 | String |
+| tmodified | The time where the file is last modified. | 16:22:47 | String |
+| modifiedby | Who modified the file (user id). | ADMIN04072020162012 | String |
+| update | How the file is updated. | NET-SIGNED | String |
+
+
+
 **Leaf Settings**
-The following is the data table used in settings:
 
 | **Data** | **Description** | **Sample Value** | **Data Type** |
 | ------------- | ------------- | ------------- | ------------- |
