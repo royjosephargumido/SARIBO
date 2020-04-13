@@ -74,7 +74,13 @@ The following are the software requirements for SARIBO:
 # Data Management Service
 SARIBO does not implement any database management systems (DBMS) in managing its data. Data are managed through the use of [*ArduinoJson Library v6.14.1 by Benoit Blanchon*](https://arduinojson.org/v6/assistant/) and saving it in a plain text file (.txt).
 
-**DMS Meta-Data**
+Data Management Service is further divided into the following content flaggers:
+1. **DMS-Meta-Data**
+2. **DMS-FSS**
+3. **DMS-Body**
+
+
+**1. DMS-Meta-Data** The *DMS Meta-Data* contains the information about the file.
 
 | **Data** | **Description** | **Sample Value** | **Data Type** |
 | ------------- | ------------- | ------------- | ------------- |
@@ -86,27 +92,43 @@ SARIBO does not implement any database management systems (DBMS) in managing its
 | dmodified | The date where the file is last modified. | April 1, 2020 | String |
 | tmodified | The time where the file is last modified. | 16:22:47 | String |
 | modifiedby | Who modified the file (user id). | ADMIN04072020162012 | String |
-| update | How the file is updated. | NET-SIGNED | String |
+| umode | How the file is updated*. | SD-SIGNED | String |
+
+**Update Mode:**
+1. ***SD-SIGNED.*** Happens when the Leaf's MicroSD Card is inserted in to the Root's Leaf SD Setup Port.
+2. ***NET-SIGNED*** Happens when the Leaf's Settings File (SysConfig.txt) is being updated automatically via the network during Leaf POST.
 
 
 
-**Leaf Settings**
+**2. DMS-FSS** The *DMS-FSS* or the Data Management Service - File Structuring Standard (as can be seen in the next chapter), are the file structuring scheme used in the current SARIBO device/version. DMS-FSS complies with the File Structuring Standard as can be seen in the next chapter.
+
 
 | **Data** | **Description** | **Sample Value** | **Data Type** |
 | ------------- | ------------- | ------------- | ------------- |
-| localhid | The Leaf's HID | 2J41F7FQ | String |
-| roothid | The Root's HID | HSDOSSUR| String |
+| device | SARIBO Module | LEAF | String |
+| repdir | Replication directory name. | Replication | String |
+| coredir | The Core Configuration Directory name. | System | String |
+| logsdir | The POST Log directory name. | Logs | String |
+| corefn | Core configuration file name. | CoreConfig.txt | String |
+
+
+
+**3. DMS-Body** This contains all the data neccessary for the device (device @ DMS-FSS).
+
+| **Data** | **Description** | **Sample Value** | **Data Type** |
+| ------------- | ------------- | ------------- | ------------- |
+| local | The Leaf's HID | 2J41F7FQ | String |
+| root | The Root's HID | HSDOSSUR| String |
 | ssid | SARIBO WiFi Access Point | SARIBO - NwSSU | String |
 | key | WAP Password | 123456789 | String |
 | host | Host IP Address | 192.168.4.1 | String |
-| urlpath | URL Path | /requests/?data= | String |
+| reqpath | URL Path | /requests/?data= | String |
 | port | Port where requests is to be sent. | 80 | Integer |
-| wakeuptime | The time when the Leaf module should wake up. | 6:00:00 | String
+| coredir | The core configuration directory. | 
+| wut | The time when the Leaf module should wake up. | 6:00:00 | String
 | maxdryness | Maximum soil dryness | 1001 | Integer |
 | mindryness | Minimum soil dryness | 600 | Integer |
 | idealmoist | Ideal soil moisture | 450 | Integer |
-| clearance | The gap between the ranging sensor to the maximum water level. | 3 | Integer |
-| fulltank | The maximum water level capacity of the water tank. | 450 | Integer |
 
 
 # File Structuring Standard
@@ -119,15 +141,30 @@ The SARIBO modules strictly follow file structuring schemes:
     +---Core
     |   |
     |   +--- "Source Codes for the Leaf Module"
+    |
     +---Documentation
     |   |
     |   +--- SARIBO User Manual.pdf
+    |
     +---Logs
     |   |
+    |   +--- CSV
+    |   |     |
+    |   |     + --- "CSV-2J41F7FQ-00001.csv"
+    |   |
     |   +--- POST
+    |        |
+    |        + --- "POST-2J41F7FQ-00001.txt"
+    |
+    +---Replication
+    |   |
+    |   +--- Logs
+    |   |
+    |   +--- Root
+    |
     +---System
         |
-        +---SysConfig.txt
+        +--- CoreConfig.txt
 
 
 **Root File Structuring:**
@@ -137,9 +174,11 @@ The SARIBO modules strictly follow file structuring schemes:
     +---Core
     |    |
     |    +--- "Source Codes for the Leaf and Root Modules"
+    |
     +---Documentation
     |    |
     |    +--- SARIBO User Manual.pdf
+    |
     +---Leaf
     |    |
     |    +---"Leaf's Hardware Id"
@@ -147,9 +186,11 @@ The SARIBO modules strictly follow file structuring schemes:
     |        +--- Configuration
     |        |
     |        +--- POST
+    |
     +---Logs
     |    |
     |    +--- POST
+    |
     +---System
          |
          +--- Resources
