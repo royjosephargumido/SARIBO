@@ -2,8 +2,8 @@
   The S.A.R.I.B.O. Prototype Functions
   Systematic and Automated Regulation of Irrigation systems for Backyard farming Operations
   
-  SARIBO Data Management Service Function
-  Version 1.2.3 Revision April 78 2020
+  SARIBO Data Management Service - Leaf Module
+  Version 1.2.4 Revision April 13, 2020
   
   BSD 3-Clause License
   Copyright (c) 2020, Roy Joseph Argumido (rjargumido@outlook.com)
@@ -35,155 +35,186 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <SPI.h>
 #include <SD.h>
+#include <SPI.h>
+#include <Wire.h>
 #include <ArduinoJson.h>
 
-//================= PIN CONFIGURATION ================
-const int sd_cs = 15;;  //SD CS Pin to NodeMCU D8/GPIO 15
-//====================================================
-
-//================== DEVICE OBJECTS =================
-File file;
-//====================================================
-
-//================== GLOBAL VARIABLES ================
+const int sdCS = 15;
 const int maxBuffer = 2000;
+
+const size_t fileBuffer = JSON_OBJECT_SIZE(30) + maxBuffer;
+DynamicJsonDocument settingsData(fileBuffer);
+
+/*
+ * Meta-Data: 10
+ * DMS-FSS:   4
+ * Request:   4
+ * HID:       2
+ * Network:   5
+ * Natives:   5
+ * ---------------
+ * Total:    30 Definitions
+ */
+
+// ================= DMS-META-DATA =================
+const char* _device = "LEAF";
+const char* _header = "LEAF-SETTINGS";
+const char* _dmsversion = "1.2.4";
+const char* _dcreated = "April 1, 2020";
+const char* _tcreated = "16:05:32";
+const char* _owner = "ADMIN04072020160532";
+const char* _dmodified = "April 1, 2020";
+const char* _tmodified = "16:22:47";
+const char* _modifiedby = "ADMIN04072020162012 ";
+const char* _umode = "SD-SIGNED";
+// =================================================
+
+// ==================== DMS-FSS ====================
+const char* _repdir = "Replication";
+const char* _coredir = "System";
+const char* _logsdir = "Logs";
+const char* _corefn = "CoreConfig.txt";
+// =================================================
+
+// ==================== REQUEST ====================
+const int _rSoil = 10;
+const int _rGen = 20;
+const int _rOpen = 21;
+const int _rClose = 22;
+// =================================================
+
+// ====================== HID ======================
+const char* _local = "2J41F7FQ";
+const char* _root = "23JB74K5";
+// =================================================
+
+// ==================== NETWORK ====================
+const char* _ssid = "SARIBO-CHARLIE";
+const char* _key = "1234567890";
+const char* _host = "192.168.4.1";
+const char* _reqpath = "/requests/?data=";
+const int _port = 80;
+// =================================================
+
+// ==================== NATIVES ====================
+const char* _wut = "6:00:00";
+const int _smrp = 10;
+const int _maxd = 1001;
+const int _mind = 600;
+const int _ideal = 450;
+// =================================================
+
+
+//======================= CACHE ======================
+File file;
+
+String device;
+String dmsheader;
+String dmsversion;
+String dcreated;
+String tcreated;
+String owner;
+String dmodified;
+String tmodified;
+String modifiedby;
+String umode;
+
+String repDir;
+String coreDir;
+String logsDir;
+String coreFN;
+
+String root;
+String local;
+
+String ssid;
+String key;
+String host;
+String reqpath;
+int port;
+
+int rSoil;
+int rGen;
+int rOpen;
+int rClose;
+
+String wut;
+int smrp;
+int maxd;
+int mind;
+int ideal;
 //====================================================
 
-//============== DEFAULT CONFIGURATIONS ==============
-const char* _DMSHEADER = "DMS-LEAF-SETTINGS";
-const char* _DMSVER = "1.2.3";
-const char* _FDCREATED = "April 7, 2020";
-const char* _FTCREATED = "16:05:32";
-const char* _FOWNER = "ADMIN04072020160532";
-const char* _FDREV = "April 7, 2020";
-const char* _FTREV = "16:05:32";
-const char* _FMUID = "ADMIN04072020162012";
-
-const char* _netSSID = "SARIBO-SERVER";
-const char* _netKEY = "1234567890";
-const char* _netHOSTIP = "192.168.4.1";
-const char* _netURLPATH = "/requests/?data=";
-const int _netPORT = 8080;
-
-const char* _GLOBAL = "HF7890QN";
-const char* _LOCAL = "8A5011X7";
-
-const char* _dirLog = "Logs";
-const char* _dirCore = "System";
-const char* _fpDocu = "Documentation/SARIBO_Manual_v3.pdf";
-const char* _fpSettings = "System/SysConfig.txt";
-
-const int _rDGen = 10;
-const int _rOpen = 11;
-const int _rClose = 12;
-const int _rPower = 20;
-const int _rDTRead = 30;
-const int _rDTSync = 31;
-const int _rSoil = 41;
-
-const char* _WUT = "6:00:00";
-const int _MAX = 1001;
-const int _MIN = 600;
-const int _IDEAL = 450;
-//====================================================
-
-struct newCache {
-  String ssid;
-  String key;
-  String ip;
-  String path;
-  int port;
-
-  String global;
-  String local;
-  String coreDir;
-  String fpConfig;
-
-  int rDGen;
-  int rOpen;
-  int rClose;
-  int rDTRead;
-  int rDTSync;
-  int rSoil;
-  
-  String wut;
-  int maxdryness;
-  int mindryness;
-  int idealmoisture;
-}cache;
-
-//============== ARDUINOJSON COMPONENTS ==============
-const size_t capacity = JSON_OBJECT_SIZE(32) + maxBuffer;
-DynamicJsonDocument settingsCORE(capacity);
-//====================================================
+int sdfail;
 
 void initSD() {
-  Serial.println("Initializing SD card...");
-  pinMode(sd_cs, OUTPUT);
+  pinMode(sdCS, OUTPUT);
 
-  while(!SD.begin(sd_cs)) {
+  while(!SD.begin(sdCS)) {
     Serial.println("Unable to detect the SD Card module!");
+    sdfail++;
     delay(1000);
   }
-  
-  Serial.println("SD Card ready.");
 }
 
-void decodeJsonData(const DeserializationError error) {
-  if(error) {
-    Serial.print(F("Unable to decode message! Error: "));
-    Serial.println(error.c_str());
-  }
+String decodeJsonData(const DeserializationError error) {
+  if(error)
+    return "Error " + (String)error.c_str();
+  else
+    return "No decoding error.";
 }
 
-void writeDefaults() {
-  String rawData = "";
+void writeLeafSettings() {
+  String rawData;
 
-  SD.mkdir(_dirCore);
+  SD.mkdir(_coredir);
 
   do {
-    file = SD.open(_fpSettings, FILE_WRITE);
+    file = SD.open((String)_coredir + (String)"/" + (String)_corefn, FILE_WRITE);
     if(file) {
       Serial.println("Unable to create the settings file!");
-      delay(500);
+      delay(1000);
     }
   }while(!file);
 
-  settingsCORE["header"] = _DMSHEADER;
-  settingsCORE["version"] = _LDMSVER;
-  settingsCORE["dcreated"] = _FDCREATED;
-  settingsCORE["tcreated"] = _FTCREATED;
-  settingsCORE["createdby"] = _FOWNER;
-  settingsCORE["dmodified"] = _FDREV;
-  settingsCORE["tmodified"] = _FTREV;
-  settingsCORE["modifiedby"] = _FMUID;
-  settingsCORE["ssid"] = _netSSID;
-  settingsCORE["key"] = _netKEY;
-  settingsCORE["ip"] = _netHOSTIP;
-  settingsCORE["urlpath"] = _netURLPATH;
-  settingsCORE["port"] = _netPORT;
-  settingsCORE["global"] = _GLOBAL;
-  settingsCORE["local"] = _LOCAL;
-  settingsCORE["dlog"] = _dirLog;
-  settingsCORE["dcore"] = _dirCore;
-  settingsCORE["ddocu"] = _fpDocu;
-  settingsCORE["fpdocu"] = _fpSettings;
-  settingsCORE["fpconfig"] = _fpSettings;
-  settingsCORE["rdgen"] = _rDGen;
-  settingsCORE["rdopen"] = _rOpen;
-  settingsCORE["rclose"] = _rClose;
-  settingsCORE["rpower"] = _rPower;
-  settingsCORE["rdtread"] = _rDTRead;
-  settingsCORE["rdtsync"] = _rDTSync;
-  settingsCORE["rsoil"] = _rSoil;
-  settingsCORE["wut"] = _WUT;
-  settingsCORE["max"] = _MAX;
-  settingsCORE["min"] = _MIN;
-  settingsCORE["ideal"] = _IDEAL;
+  settingsData["device"] = _device;
+  settingsData["header"] = _header;
+  settingsData["dmsver"] = _dmsversion;
+  settingsData["dcreated"] = _dcreated;
+  settingsData["tcreated"] = _tcreated;
+  settingsData["owner"] = _owner;
+  settingsData["dmodified"] = _dmodified;
+  settingsData["tmodified"] = _tmodified;
+  settingsData["modifiedby"] = _modifiedby;
+  settingsData["umode"] = _umode;
 
-  serializeJson(settingsCORE, rawData);
+  settingsData["repdir"] = _repdir;
+  settingsData["coredir"] = _coredir;
+  settingsData["logsdir"] = _logsdir;
+  settingsData["corefn"] = _corefn;
+
+  settingsData["rsoil"] = _rSoil;
+  settingsData["rgen"] = _rGen;
+  settingsData["ropen"] = _rOpen;
+  settingsData["rclose"] = _rClose;
+  
+  settingsData["root"] = _root;
+  settingsData["local"] = _local;
+  
+  settingsData["ssid"] = _ssid;
+  settingsData["key"] = _key;
+  settingsData["host"] = _host;
+  settingsData["reqpath"] = _reqpath;
+  settingsData["port"] = _port;
+  
+  settingsData["wut"] = _wut;
+  settingsData["smrp"] = _smrp;
+  settingsData["maxd"] = _maxd;
+  settingsData["mind"] = _mind;
+  settingsData["ideal"] = _ideal;
+
+  serializeJson(settingsData, rawData);
 
   file.print(rawData);
   file.close();
@@ -191,12 +222,12 @@ void writeDefaults() {
   Serial.println("Done writing default settings.");
 }
 
-void loadSettings() {
+void loadLeafSettings() {
   char data[maxBuffer];
   int i = 0;
 
   do {
-    file = SD.open(_fpSettings);
+    file = SD.open((String)_coredir + (String)"/" +  (String)_corefn);
     if(!file) {
       Serial.println("Unable to load settings!");
       delay(500);
@@ -209,72 +240,142 @@ void loadSettings() {
   }
   data[i] = '\0';
 
-  decodeJsonData(deserializeJson(settingsCORE, data));
+  decodeJsonData(deserializeJson(settingsData, data));
+    
+  device = settingsData["device"].as<String>();
+  dmsheader = settingsData["header"].as<String>();
+  dmsversion = settingsData["dmsver"].as<String>();
+  dcreated = settingsData["dcreated"].as<String>();
+  tcreated = settingsData["tcreated"].as<String>();
+  owner = settingsData["owner"].as<String>();
+  dmodified = settingsData["dmodified"].as<String>();
+  tmodified = settingsData["tmodified"].as<String>();
+  modifiedby = settingsData["modifiedby"].as<String>();
+  umode = settingsData["umode"].as<String>();
+  
+  repDir = settingsData["repdir"].as<String>();
+  coreDir = settingsData["coredir"].as<String>();
+  logsDir = settingsData["logsdir"].as<String>();
+  coreFN = settingsData["corefn"].as<String>();
 
-  cache.ssid = settingsCORE["ssid"].as<String>();
-  cache.key = settingsCORE["key"].as<String>();
-  cache.ip = settingsCORE["ip"].as<String>();
-  cache.path = settingsCORE["urlpath"].as<String>();
-  cache.port = settingsCORE["port"].as<int>();
-  cache.global = settingsCORE["global"].as<String>();
-  cache.local = settingsCORE["local"].as<String>();
-  cache.coreDir = settingsCORE["dcore"].as<String>();
-  cache.fpConfig = settingsCORE["fpconfig"].as<String>();
-  cache.rDGen = settingsCORE["rdgen"].as<int>();
-  cache.rOpen = settingsCORE["ropen"].as<int>();
-  cache.rClose = settingsCORE["rclose"].as<int>();
-  cache.rDTRead = settingsCORE["rdtread"].as<int>();
-  cache.rDTSync = settingsCORE["rdtsync"].as<int>();
-  cache.rSoil = settingsCORE["rsoil"].as<int>();
-  cache.wut = settingsCORE["wut"].as<String>();
-  cache.maxdryness = settingsCORE["max"].as<int>();
-  cache.mindryness = settingsCORE["min"].as<int>();
-  cache.idealmoisture = settingsCORE["ideal"].as<int>();
+  rSoil = settingsData["rsoil"].as<int>();
+  rGen = settingsData["rgen"].as<int>();
+  rOpen = settingsData["ropen"].as<int>();
+  rClose = settingsData["rclose"].as<int>();
 
-  Serial.print("SSID: ");
-  Serial.println(cache.ssid);
+  root = settingsData["root"].as<String>();
+  local = settingsData["local"].as<String>();
+  
+  ssid = settingsData["ssid"].as<String>();
+  key = settingsData["key"].as<String>();
+  host = settingsData["host"].as<String>();
+  reqpath = settingsData["reqpath"].as<String>();
+  port = settingsData["port"].as<int>();
+  
+  wut = settingsData["wut"].as<String>();
+  smrp = settingsData["smrp"].as<int>();
+  maxd = settingsData["maxd"].as<int>();
+  mind = settingsData["mind"].as<int>();
+  ideal = settingsData["ideal"].as<int>();
 
-  Serial.print("Key: ");
-  Serial.println(cache.key);
+  Serial.println("================= META-DATA =================");
+  Serial.print("SARIBO Module:\t\t");
+  Serial.println(device);
+  Serial.print("Content type:\t\t");
+  Serial.println(dmsheader);
+  Serial.print("Version:\t\t\t");
+  Serial.println(dmsversion);
+  Serial.print("Date created:\t\t");
+  Serial.println(dcreated);
+  Serial.print("Time created:\t\t");
+  Serial.println(tcreated);
+  Serial.print("File owner:\t\t\t");
+  Serial.println(owner);
+  Serial.print("Date last modified:\t");
+  Serial.println(dmodified);
+  Serial.print("Time last modified:\t");
+  Serial.println(tmodified);
+  Serial.print("Last modified by:\t\t");
+  Serial.println(modifiedby);
+  Serial.print("Updated via:\t\t");
+  Serial.println(umode);
+  Serial.println("=============================================");
+  
+  Serial.println();
 
-  Serial.print("IP: ");
-  Serial.println(cache.ip);
+  Serial.println("========= FILE STRUCTURING STANDARD =========");
+  Serial.print("Replication Directory:\t");
+  Serial.println(repDir);
+  Serial.print("System Directory:\t\t");
+  Serial.println(coreDir);
+  Serial.print("Logs Directory:\t\t");
+  Serial.println(logsDir);
+  Serial.print("Settings Filename:\t");
+  Serial.println(coreFN);
+  Serial.println("=============================================");
+  
+  Serial.println();
 
-  Serial.print("URL Path: ");
-  Serial.println(cache.path);
+  Serial.println("================ HARDWARE ID ================");
+  Serial.print("Root HID:\t\t\t");
+  Serial.println(root);
+  Serial.print("Local HID:\t\t\t");
+  Serial.println(local);
+  Serial.println("=============================================");
 
-  Serial.print("Port: ");
-  Serial.println(cache.port);
+  Serial.println();
 
-  Serial.print("Root HID: ");
-  Serial.println(cache.global);
+  Serial.println("================== NETWORK ==================");
+  Serial.print("SSID:\t\t\t\t");
+  Serial.println(ssid);
+  Serial.print("Password:\t\t\t");
+  Serial.println(key);
+  Serial.print("Host IP:\t\t\t");
+  Serial.println(host);
+  Serial.print("Requests Path:\t\t");
+  Serial.println(reqpath);
+  Serial.print("Port:\t\t\t\t");
+  Serial.println(port);
+  Serial.println("=============================================");
 
-  Serial.print("Local HID: ");
-  Serial.println(cache.local);
+  Serial.println();
 
-  Serial.print("Wake up time: ");
-  Serial.println(cache.wut);
+  Serial.println("=============== REQUEST CODE ================");
+  Serial.print("Soil Reading:\t\t");
+  Serial.println(rSoil);
+  Serial.print("General Reading:\t\t");
+  Serial.println(rGen);
+  Serial.print("Open Line:\t\t\t");
+  Serial.println(rOpen);
+  Serial.print("Close Line:\t\t\t");
+  Serial.println(rClose);
+  Serial.println("=============================================");
 
-  Serial.print("Max Soil Dryness: ");
-  Serial.println(cache.maxdryness);
+  Serial.println();
 
-  Serial.print("Min Soil Dryness: ");
-  Serial.println(cache.mindryness);
-
-  Serial.print("Ideal Soil Moisture: ");
-  Serial.println(cache.idealmoisture);
+  Serial.println("================== NATIVES ==================");
+  Serial.print("Wake-up Time:\t\t");
+  Serial.println(wut);
+  Serial.print("SM reading precision:\t");
+  Serial.println(smrp);
+  Serial.print("Maximum Soil Dryness:\t");
+  Serial.println(maxd);
+  Serial.print("Minimum Soil Dryness:\t");
+  Serial.println(mind);
+  Serial.print("Ideal Soil Moisture:\t");
+  Serial.println(ideal);
+  Serial.println("=============================================");
 
   file.close();
-  Serial.println("Settings loaded.");
 }
 
 void setup() {
-  delay(3000);
   Serial.begin(115200);
+  delay(3000);
 
   initSD();
-  writeDefaults();
-  loadSettings();
+  writeLeafSettings();
+  loadLeafSettings();
 }
 
 void loop() {
